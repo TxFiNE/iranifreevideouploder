@@ -1,11 +1,5 @@
-<!doctype html><html><head>
-<meta name="google-site-verification" content="obyk_4vwmxoc6z-GOyhr0jVjblLuEFFqYl4pSXvsstw" />
-<meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>جعبه ویدیو</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>جعبه ویدیو</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800;900&display=swap">
 <style>
   /* Layout: sticky top bar (tabs move to a bottom bar on phones). Watch = featured hero + filter chips + thumbnail grid.
      Shorts = full-height snap feed. Player = full-screen overlay. Black ground, one orange accent, single dark theme by design. */
@@ -243,754 +237,208 @@
   @media (max-width: 900px) { .pl { grid-template-columns: minmax(0, 1fr); } }
 
   @media (prefers-reduced-motion: reduce) { .sk, .prog::after, .burst { animation: none; } .drop, .vc *, .btn { transition: none; } }
-</style>
 
-<div class="wrap">
-  <header class="top">
-    <a class="brand" href="#watch"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg></span>جعبه&nbsp;<b>ویدیو</b></a>
-    <nav class="tabs" id="nav" aria-label="صفحات"></nav>
-  </header>
-  <main id="main"></main>
-</div>
-<div id="overlay" role="dialog" aria-modal="true" aria-label="پخش ویدیو" hidden></div>
+.edit input,.edit textarea{width:100%}.edit .btn{justify-content:center}.cform{display:flex;gap:8px;margin-top:10px}.cform input{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}.who{color:var(--muted);text-decoration:none}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--accent);padding:8px 18px;border-radius:12px;z-index:99}
+</style></head><body>
+<div class="wrap"><header class="top"><a class="brand" href="#watch"><span class="mark"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg></span>جعبه&nbsp;<b>ویدیو</b></a><nav class="tabs" id="nav"></nav></header><main id="main"></main></div>
+<div id="overlay" hidden></div>
+<script>window.__app=function(){/* ====== تنظیمات: مقدار Firebase خودت رو اینجا بذار ====== */
+var FIREBASE_CONFIG = { apiKey:"", authDomain:"", projectId:"", storageBucket:"", messagingSenderId:"", appId:"" };
+var OWNER_EMAIL = "parsaxgamer65@gmail.com";
+var MAX_MB = 200;
+/* ======================================================== */
+(function(){
+"use strict";
+if(!FIREBASE_CONFIG.apiKey){document.body.innerHTML='<p style="padding:24px;color:#fff;direction:rtl;line-height:2">کلیدهای Firebase هنوز وارد نشدن.<br>فایل index.html رو باز کن و مقدار FIREBASE_CONFIG (apiKey و ...) رو از کنسول Firebase کپی کن و اونجا بذار.</p>';return}
+try{firebase.initializeApp(FIREBASE_CONFIG)}catch(e){document.body.innerHTML='<p style="padding:24px;color:#fff;direction:rtl">خطا در Firebase: '+e.message+'</p>';return}
+var auth=firebase.auth(), db=firebase.firestore(), st=firebase.storage(), FV=firebase.firestore.FieldValue;
+var $=function(s){return document.querySelector(s)};
+function el(t,c,x){var n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n}
+function btn(c,x,f){var b=el("button",c,x);b.type="button";if(f)b.onclick=f;return b}
+function inp(type,ph,v){var i=document.createElement("input");i.type=type;i.placeholder=ph;if(v)i.value=v;return i}
+function toast(m){var o=$("#toast");if(o)o.remove();var t=el("div","toast",m);t.id="toast";document.body.appendChild(t);setTimeout(function(){t.remove()},3000)}
+var me=null, mine=null, unsub=null, cache={};
+var isOwner=function(u){return u&&u.email&&u.email.toLowerCase()===OWNER_EMAIL&&u.emailVerified};
+var role=function(){return isOwner(auth.currentUser)?"owner":(mine&&mine.role)||"user"};
+var isStaff=function(){return role()==="owner"||role()==="admin"};
+function avatar(u,sz){var a=el("img");a.alt="";a.style.cssText="width:"+sz+"px;height:"+sz+"px;border-radius:50%;object-fit:cover;background:#2a2521";a.src=(u&&u.photo)||"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E";return a}
+async function userById(uid){if(cache[uid])return cache[uid];var d=await db.collection("users").doc(uid).get();return cache[uid]=d.exists?Object.assign({uid:uid},d.data()):{uid:uid,name:"کاربر",handle:"?"}}
+function go(h){location.hash=h}
+function clean(x,n){return String(x||"").replace(/\s+/g," ").trim().slice(0,n)}
 
-<script>
-(function () {
-  "use strict";
-  var MAX = 20 * 1024 * 1024;
-  var PAGES = [["watch", "تماشا"], ["shorts", "شورت"], ["upload", "آپلود"], ["profile", "پروفایل"], ["account", "اکانت"]];
-  var ICON = {
-    watch: '<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/>',
-    shorts: '<path d="M13 3 5 13h6l-1 8 8-10h-6z"/>',
-    upload: '<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/>',
-    profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>',
-    account: '<rect x="4" y="10" width="16" height="10" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
-    heart: '<path d="M12 21l-1.5-1.3C5.4 15.1 2 12.1 2 8.5 2 5.5 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.5 22 8.5c0 3.6-3.4 6.6-8.5 11.2L12 21Z"/>',
-    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>',
-    share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4M8.6 13.4l6.8 4"/>',
-    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
-    x: '<path d="M6 6l12 12M18 6 6 18"/>',
-    vol: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/>',
-    mute: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="m17 9 4 6M21 9l-4 6"/>',
-    eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
-    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
-    trash: '<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
-    play: '<path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/>',
-    pause: '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>',
-    up: '<path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>'
+/* ---------- auth ---------- */
+auth.onAuthStateChanged(function(u){
+  me=u; if(unsub){unsub();unsub=null}
+  if(!u){mine=null;render();return}
+  unsub=db.collection("users").doc(u.uid).onSnapshot(function(d){mine=d.exists?d.data():null;cache[u.uid]=mine&&Object.assign({uid:u.uid},mine);render()});
+});
+function pAuth(m){
+  var mode="in",box=el("form","edit"),h=el("h1",null,"ورود به جعبه ویدیو");
+  var em=inp("email","ایمیل"),p1=inp("password","رمز عبور"),p2=inp("password","تکرار رمز عبور");
+  em.autocomplete="email";p2.hidden=true;
+  var go1=el("button","btn","ورود");go1.type="submit";
+  var sw=btn("ghost","حساب نداری؟ ثبت‌نام",function(){mode=mode==="in"?"up":"in";p2.hidden=mode==="in";go1.textContent=mode==="in"?"ورود":"ثبت‌نام";h.textContent=mode==="in"?"ورود به جعبه ویدیو":"ساخت حساب";sw.textContent=mode==="in"?"حساب نداری؟ ثبت‌نام":"حساب داری؟ ورود"});
+  var g=btn("btn","ورود با گوگل",function(){auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){toast("ورود با گوگل انجام نشد")})});
+  box.onsubmit=async function(e){e.preventDefault();
+    try{
+      if(mode==="up"){
+        if(p1.value.length<6)return toast("رمز باید حداقل ۶ کاراکتر باشد.");
+        if(p1.value!==p2.value)return toast("دو رمز یکسان نیستند.");
+        var c=await auth.createUserWithEmailAndPassword(em.value.trim(),p1.value);
+        c.user.sendEmailVerification().catch(function(){});toast("ایمیل تایید فرستاده شد.");
+      }else await auth.signInWithEmailAndPassword(em.value.trim(),p1.value);
+    }catch(er){toast(er.code==="auth/email-already-in-use"?"این ایمیل قبلاً ثبت شده.":"ایمیل یا رمز اشتباه است.")}};
+  [h,em,p1,p2,go1,g,sw].forEach(function(x){box.appendChild(x)});box.style.maxWidth="420px";m.appendChild(box);
+}
+function pSetup(m){
+  var f=el("form","edit");f.style.maxWidth="420px";
+  var nm=inp("text","نام نمایشی",auth.currentUser.displayName||""),hd=inp("text","آیدی (انگلیسی، مثل parsa_65)");hd.dir="ltr";
+  var s=el("button","btn","ساخت پروفایل");s.type="submit";
+  [el("h1",null,"آیدی خودت رو انتخاب کن"),nm,hd,s].forEach(function(x){f.appendChild(x)});
+  f.onsubmit=async function(e){e.preventDefault();
+    var h=hd.value.trim().toLowerCase();
+    if(!/^[a-z0-9_]{3,20}$/.test(h))return toast("آیدی: ۳ تا ۲۰ حرف انگلیسی/عدد/_");
+    var u=auth.currentUser,b=db.batch();
+    try{
+      var ex=await db.collection("handles").doc(h).get();if(ex.exists)return toast("این آیدی گرفته شده.");
+      b.set(db.collection("handles").doc(h),{uid:u.uid});
+      b.set(db.collection("users").doc(u.uid),{name:clean(nm.value,40)||h,handle:h,photo:u.photoURL||"",email:u.email,role:"user",banned:false,noUpload:false,noChat:false,createdAt:FV.serverTimestamp()});
+      await b.commit();
+    }catch(er){toast("ساخته نشد: "+er.code)}};
+  m.appendChild(f);
+}
+
+/* ---------- videos ---------- */
+function vcard(v){
+  var c=el("article","vc");c.tabIndex=0;
+  var t=el("div","thumb"),vv=document.createElement("video");vv.src=v.url+"#t=0.5";vv.preload="metadata";vv.muted=true;t.appendChild(vv);
+  c.appendChild(t);c.appendChild(el("h3",null,v.title));
+  var w=el("a","who",v.ownerName||"");w.href="#u/"+v.ownerHandle;w.onclick=function(e){e.stopPropagation()};c.appendChild(w);
+  c.onclick=function(){play(v)};
+  if(me&&(v.ownerId===me.uid||isStaff())){var d=btn("ghost del","حذف",async function(e){e.stopPropagation();if(!confirm("حذف شود؟"))return;await db.collection("videos").doc(v.id).delete();try{await st.refFromURL(v.url).delete()}catch(x){}render()});c.appendChild(d)}
+  return c;
+}
+function play(v){
+  var o=$("#overlay");o.textContent="";o.hidden=false;document.body.classList.add("lock");
+  var pl=el("div","pl"),b=el("div","bar");b.appendChild(el("span","count",v.title));b.appendChild(btn("pclose","✕",close));pl.appendChild(b);
+  var mn=el("div","pmain"),vd=document.createElement("video");vd.controls=true;vd.autoplay=true;vd.playsInline=true;vd.src=v.url;mn.appendChild(vd);
+  mn.appendChild(el("h1",null,v.title));mn.appendChild(el("p","sub",v.description||""));pl.appendChild(mn);o.appendChild(pl);
+  function close(){vd.pause();o.hidden=true;o.textContent="";document.body.classList.remove("lock")}
+}
+function grid(list){var g=el("div","grid");if(!list.length)return el("div","sub","ویدیویی نیست.");list.forEach(function(v){g.appendChild(vcard(v))});return g}
+async function loadVideos(q){var s=await q.orderBy("createdAt","desc").limit(60).get();return s.docs.map(function(d){return Object.assign({id:d.id},d.data())})}
+async function pWatch(m){
+  var box=el("div");m.appendChild(el("h1",null,"تماشا"));m.appendChild(box);
+  box.appendChild(grid(await loadVideos(db.collection("videos"))));
+}
+function pUpload(m){
+  m.appendChild(el("h1",null,"آپلود ویدیو"));
+  if(mine.banned)return m.appendChild(el("div","sub","حساب شما بن شده."));
+  if(mine.noUpload&&!isStaff())return m.appendChild(el("div","sub","اجازه آپلود برای شما غیرفعال شده."));
+  var f=el("form","edit"),file=document.createElement("input");file.type="file";file.accept="video/*";
+  var t=inp("text","عنوان"),d=document.createElement("textarea");d.placeholder="توضیحات";
+  var s=el("button","btn","آپلود");s.type="submit";var pr=el("div","sub");
+  [file,t,d,s,pr].forEach(function(x){f.appendChild(x)});m.appendChild(f);
+  f.onsubmit=function(e){e.preventDefault();var fl=file.files[0];
+    if(!fl)return toast("یه ویدیو انتخاب کن.");if(fl.size>MAX_MB*1048576)return toast("حداکثر "+MAX_MB+" مگابایت.");
+    s.disabled=true;var id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    var task=st.ref("videos/"+me.uid+"/"+id).put(fl,{contentType:fl.type});
+    task.on("state_changed",function(x){pr.textContent=Math.round(x.bytesTransferred/x.totalBytes*100)+"٪"},function(er){toast("آپلود نشد: "+er.code);s.disabled=false},async function(){
+      var url=await task.snapshot.ref.getDownloadURL();
+      await db.collection("videos").add({ownerId:me.uid,ownerName:mine.name,ownerHandle:mine.handle,title:clean(t.value,120)||"بدون نام",description:clean(d.value,800),url:url,createdAt:FV.serverTimestamp()});
+      toast("آپلود شد.");go("watch")});
   };
-  var S = {
-    videos: [], byId: {}, profiles: {}, names: {}, avatars: {}, likes: {}, views: {}, comments: {},
-    me: { id: null, name: "", avatarUrl: "", canEdit: false, isOwner: false },
-    assets: null, userCap: null, col: null, pcol: null, lcol: null, ccol: null, vcol: null,
-    vraw: {}, likeDocs: {}, viewDocs: {}, cmtDocs: {},
-    loaded: false, dbOn: false, canWrite: null, usage: null,
-    q: "", sort: "new", kind: "all", viewing: null, queue: [], confirmId: null, editId: null, muted: true, openId: null
-  };
-  var fa = new Intl.NumberFormat("fa-IR");
-  var rtf = null; try { rtf = new Intl.RelativeTimeFormat("fa", { numeric: "auto" }); } catch (e) {}
+}
 
-  function $(s, r) { return (r || document).querySelector(s); }
-  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
-  function ic(name) { var s = el("span", "ic"); s.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[name] + "</svg>"; return s; }
-  function btn(cls, text, fn) { var b = el("button", cls, text); b.type = "button"; if (fn) b.addEventListener("click", fn); return b; }
-  function fmtSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
-  function fmtDur(s) { s = Math.max(0, Math.round(s || 0)); var m = Math.floor(s / 60), r = s % 60; return fa.format(m) + ":" + (r < 10 ? "۰" : "") + fa.format(r); }
-  function ago(iso) {
-    if (!iso || !rtf) return "";
-    var s = (new Date(iso).getTime() - Date.now()) / 1000, a = Math.abs(s);
-    var u = [["year", 31536000], ["month", 2592000], ["day", 86400], ["hour", 3600], ["minute", 60]];
-    for (var i = 0; i < u.length; i++) if (a >= u[i][1]) return rtf.format(Math.round(s / u[i][1]), u[i][0]);
-    return "همین حالا";
+/* ---------- search / profile / admin ---------- */
+function pSearch(m){
+  m.appendChild(el("h1",null,"جستجوی کاربر"));
+  var i=inp("search","آیدی دوستت رو بنویس…");i.dir="ltr";var r=el("div");m.appendChild(i);m.appendChild(r);
+  i.oninput=async function(){var q=i.value.trim().toLowerCase().replace(/^@/,"");r.textContent="";if(q.length<2)return;
+    var s=await db.collection("users").orderBy("handle").startAt(q).endAt(q+"\uf8ff").limit(15).get();
+    s.docs.forEach(function(d){var u=d.data(),a=el("a","who");a.href="#u/"+u.handle;a.style.cssText="display:flex;gap:10px;align-items:center;padding:8px 0";a.appendChild(avatar(u,40));a.appendChild(document.createTextNode(u.name+"  @"+u.handle));r.appendChild(a)});
+    if(!s.size)r.appendChild(el("div","sub","کاربری پیدا نشد."))};
+}
+async function pProfile(m,handle){
+  var h=await db.collection("handles").doc(handle).get();
+  if(!h.exists)return m.appendChild(el("div","sub","کاربری با این آیدی نیست."));
+  var u=await userById(h.data().uid),mineP=u.uid===me.uid;
+  var hd=el("div","me");hd.appendChild(avatar(u,76));var n=el("div");n.appendChild(el("div","n",u.name));n.appendChild(el("div","sub","@"+u.handle+(u.role==="admin"?" · ادمین":"")+(isOwner({email:u.email,emailVerified:true})?" · اونر":"")+(u.banned?" · بن":"")));hd.appendChild(n);m.appendChild(hd);
+  var ac=el("div","actions");
+  if(!mineP)ac.appendChild(btn("btn","پیام",function(){go("chat/"+u.uid)}));
+  if(mineP){
+    var ph=document.createElement("input");ph.type="file";ph.accept="image/*";ph.hidden=true;
+    ph.onchange=async function(){var im=await resize(ph.files[0],160);await db.collection("users").doc(me.uid).update({photo:im});toast("عکس پروفایل عوض شد.")};
+    ac.appendChild(btn("ghost","عکس پروفایل",function(){ph.click()}));ac.appendChild(ph);
+    ac.appendChild(btn("ghost","خروج",function(){auth.signOut()}));
   }
-  function page() { var h = (location.hash || "").slice(1); return PAGES.some(function (p) { return p[0] === h; }) ? h : "watch"; }
-  function nameOf(id) { return (S.profiles[id] && S.profiles[id].name) || S.names[id] || (id && id === S.me.id && S.me.name) || "کاربر"; }
-  function avatarOf(id) { return id && id === S.me.id ? S.me.avatarUrl : S.avatars[id] || ""; }
-  /* ---------- input hygiene: everything read from the shared store is untrusted ---------- */
-  var RX_ID = /^[0-9a-f]{32}$/, RX_LID = /^[0-9a-f]{16}$/, RX_UID = /^u_[A-Za-z0-9_-]{4,40}$/, RX_KEY = /^u_[A-Za-z0-9_-]{4,40}\.[0-9a-f]{16}$/;
-  var MAXV = 80, MAXC = 120, MAXL = 3000, MAXW = 2000;
-  function sane(x, max, multi) {
-    x = String(x == null ? "" : x).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f​‪-‮⁦-⁩﻿]/g, "");
-    x = multi ? x.replace(/\r\n?/g, "\n").replace(/\n{3,}/g, "\n\n") : x.replace(/\s+/g, " ");
-    return x.trim().slice(0, max);
+  m.appendChild(ac);
+  if(!mineP&&isStaff()&&!(u.role==="admin"&&role()!=="owner")){
+    var ad=el("div","actions");
+    var flag=function(k,l){ad.appendChild(btn("ghost"+(u[k]?" confirm":""),(u[k]?"لغو ":"")+l,async function(){await db.collection("users").doc(u.uid).update(Object.assign({},{[k]:!u[k]}));delete cache[u.uid];render()}))};
+    flag("banned","بن");flag("noUpload","No Upload");flag("noChat","No Chat");
+    if(role()==="owner")ad.appendChild(btn("ghost",u.role==="admin"?"حذف ادمین":"تگ ادمین",async function(){await db.collection("users").doc(u.uid).update({role:u.role==="admin"?"user":"admin"});delete cache[u.uid];render()}));
+    m.appendChild(el("h2",null,"مدیریت"));m.appendChild(ad);
   }
-  function num(x, lo, hi) { x = Number(x); return isFinite(x) ? Math.min(hi, Math.max(lo, x)) : lo; }
-  function cleanDate(x) { var t = Date.parse(x); return isFinite(t) ? new Date(t).toISOString() : ""; }
-  function okAvatar(u) { return typeof u === "string" && /^(data:image\/(png|jpeg|gif|webp|svg\+xml)[;,]|\/[^\/]|https:\/\/)/.test(u); }
-  function rid() {
-    var a = new Uint8Array(8);
-    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else for (var i = 0; i < 8; i++) a[i] = Math.floor(Math.random() * 256);
-    return Array.prototype.map.call(a, function (b) { return (b < 16 ? "0" : "") + b.toString(16); }).join("");
-  }
-  function keyList(arr, cap) { return Array.isArray(arr) ? arr.filter(function (k) { return typeof k === "string" && RX_KEY.test(k); }).slice(-cap) : []; }
-  function parseKeyDocs(snap, cap) {
-    var o = {}; snap.docs.forEach(function (d) { if (RX_UID.test(d.id)) o[d.id] = keyList((d.data() || {}).ids, cap); }); return o;
-  }
-  function rebuildMap(docs, target) {
-    var o = {}; Object.keys(docs).forEach(function (uid) { docs[uid].forEach(function (k) { (o[k] = o[k] || new Set()).add(uid); }); }); S[target] = o;
-  }
-  function rebuildComments() {
-    var o = {};
-    Object.keys(S.cmtDocs).forEach(function (uid) { S.cmtDocs[uid].forEach(function (c) { (o[c.videoId] = o[c.videoId] || []).push({ id: c.id, userId: uid, text: c.text, createdAt: c.createdAt }); }); });
-    Object.keys(o).forEach(function (k) { o[k].sort(function (a, b) { return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0; }); });
-    S.comments = o;
-  }
-  function parseCmt(snap) {
-    var o = {};
-    snap.docs.forEach(function (d) {
-      if (!RX_UID.test(d.id)) return;
-      var items = Array.isArray((d.data() || {}).items) ? d.data().items.slice(-MAXC) : [];
-      o[d.id] = items.filter(function (c) { return c && typeof c.id === "string" && RX_LID.test(c.id) && typeof c.videoId === "string" && RX_KEY.test(c.videoId) && typeof c.text === "string"; })
-        .map(function (c) { return { id: c.id, videoId: c.videoId, text: sane(c.text, 300), createdAt: cleanDate(c.createdAt) }; }).filter(function (c) { return c.text; });
-    });
-    S.cmtDocs = o; rebuildComments();
-  }
-  function parseVideos(snap) {
-    var all = [], raw = {};
-    snap.docs.forEach(function (d) {
-      if (!RX_UID.test(d.id)) return;
-      var items = Array.isArray((d.data() || {}).items) ? d.data().items.slice(0, MAXV) : [], keep = [];
-      items.forEach(function (r) {
-        if (!r || typeof r !== "object" || typeof r.id !== "string" || !RX_LID.test(r.id) || typeof r.assetId !== "string" || !RX_ID.test(r.assetId)) return;
-        var rec = { id: r.id, assetId: r.assetId, thumbId: typeof r.thumbId === "string" && RX_ID.test(r.thumbId) ? r.thumbId : "", title: sane(r.title, 120) || "بدون نام",
-          description: sane(r.description, 800, true), size: num(r.size, 0, 1e10), dur: Math.round(num(r.dur, 0, 86400)), kind: r.kind === "short" ? "short" : "video", createdAt: cleanDate(r.createdAt) };
-        keep.push(rec);
-        all.push({ id: d.id + "." + rec.id, lid: rec.id, ownerId: d.id, assetId: rec.assetId, thumbId: rec.thumbId, title: rec.title, desc: rec.description, size: rec.size, dur: rec.dur, kind: rec.kind, createdAt: rec.createdAt, url: "/_blob/" + rec.assetId });
-      });
-      raw[d.id] = keep;
-    });
-    all.sort(function (a, b) { return a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0; });
-    S.vraw = raw; S.videos = all; S.byId = {}; all.forEach(function (v) { S.byId[v.id] = v; });
-  }
-  function saveMine(items) {
-    var prev = S.vraw[S.me.id]; S.vraw[S.me.id] = items;
-    return S.col.doc(S.me.id).set({ items: items }).catch(function (e) { S.vraw[S.me.id] = prev; throw e; });
-  }
-  var toastT = null;
-  function toast(msg) {
-    var old = $("#toast"); if (old) old.remove();
-    var t = el("div", "toast", msg); t.id = "toast"; document.body.appendChild(t);
-    clearTimeout(toastT); toastT = setTimeout(function () { t.remove(); }, 2800);
-  }
+  m.appendChild(el("h2",null,"کانال "+u.name));
+  m.appendChild(grid(await loadVideos(db.collection("videos").where("ownerId","==",u.uid))));
+}
+function resize(file,px){return new Promise(function(ok){var r=new FileReader();r.onload=function(){var i=new Image();i.onload=function(){var c=document.createElement("canvas");c.width=c.height=px;var s=Math.min(i.width,i.height);c.getContext("2d").drawImage(i,(i.width-s)/2,(i.height-s)/2,s,s,0,0,px,px);ok(c.toDataURL("image/jpeg",.8))};i.src=r.result};r.readAsDataURL(file)})}
 
-  /* ---------- social data helpers ---------- */
-  function nLikes(id) { return S.likes[id] ? S.likes[id].size : 0; }
-  function nViews(id) { return S.views[id] ? S.views[id].size : 0; }
-  function nComments(id) { return (S.comments[id] || []).length; }
-  function isLiked(id) { return !!(S.me.id && S.likes[id] && S.likes[id].has(S.me.id)); }
-  function stat(kind, id) {
-    var s = el("span", "stat"); s.dataset.st = kind + ":" + id;
-    s.appendChild(ic(kind === "l" ? "heart" : kind === "v" ? "eye" : "chat")); s.appendChild(el("span", "n"));
-    return s;
+/* ---------- chat (پیوی) ---------- */
+var cunsub=null;
+async function pChat(m,other){
+  if(!other){
+    m.appendChild(el("h1",null,"پیام‌ها"));
+    var s=await db.collection("chats").where("members","array-contains",me.uid).orderBy("last","desc").limit(30).get();
+    if(!s.size)m.appendChild(el("div","sub","هنوز پیامی نداری. از «جستجو» یه دوست پیدا کن."));
+    for(var d of s.docs){var o=d.data().members.find(function(x){return x!==me.uid}),u=await userById(o),a=el("a","who",u.name+" — "+(d.data().text||""));a.href="#chat/"+o;a.style.display="block";m.appendChild(a)}
+    return;
   }
-  function setStat(s) {
-    var p = s.dataset.st.split(":"), id = p[1];
-    s.querySelector(".n").textContent = fa.format(p[0] === "l" ? nLikes(id) : p[0] === "v" ? nViews(id) : nComments(id));
-  }
-  function setLikeBtn(b) {
-    var on = isLiked(b.dataset.like);
-    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
-    b.querySelector(".n").textContent = fa.format(nLikes(b.dataset.like));
-  }
-  function likeBtn(v) {
-    var b = btn("sbtn"); b.dataset.like = v.id; b.setAttribute("aria-label", "لایک");
-    b.appendChild(ic("heart")); b.appendChild(el("span", "n"));
-    b.addEventListener("click", function (e) { e.stopPropagation(); toggleLike(v); });
-    setLikeBtn(b); return b;
-  }
-  var likeBusy = false;
-  async function toggleLike(v) {
-    if (!S.me.id || !S.lcol) { toast("برای لایک کردن باید وارد حسابت بشی."); return; }
-    if (likeBusy) return; likeBusy = true; setTimeout(function () { likeBusy = false; }, 350);
-    var cur = S.likeDocs[S.me.id] || [], has = cur.indexOf(v.id) >= 0;
-    var next = has ? cur.filter(function (k) { return k !== v.id; }) : cur.concat(v.id).slice(-MAXL);
-    S.likeDocs[S.me.id] = next; rebuildMap(S.likeDocs, "likes"); refreshSocial();
-    try { await S.lcol.doc(S.me.id).set({ ids: next }); }
-    catch (e) { S.likeDocs[S.me.id] = cur; rebuildMap(S.likeDocs, "likes"); refreshSocial(); toast("لایک ثبت نشد. دوباره امتحان کن."); }
-  }
-  var lastCmt = 0;
-  async function postComment(v, raw) {
-    var t = sane(raw, 300); if (!t) return false;
-    if (!S.me.id || !S.ccol) { toast("برای کامنت گذاشتن باید وارد حسابت بشی."); return false; }
-    if (Date.now() - lastCmt < 4000) { toast("چند ثانیه صبر کن و دوباره بفرست."); return false; }
-    var cur = S.cmtDocs[S.me.id] || [];
-    var next = cur.concat({ id: rid(), videoId: v.id, text: t, createdAt: new Date().toISOString() }).slice(-MAXC);
-    lastCmt = Date.now(); S.cmtDocs[S.me.id] = next; rebuildComments(); refreshSocial();
-    try { await S.ccol.doc(S.me.id).set({ items: next }); return true; }
-    catch (e) { S.cmtDocs[S.me.id] = cur; rebuildComments(); refreshSocial(); toast("کامنت ارسال نشد."); return false; }
-  }
-  async function delComment(c) {
-    if (c.userId !== S.me.id || !S.ccol) return;
-    var cur = S.cmtDocs[S.me.id] || [], next = cur.filter(function (x) { return x.id !== c.id; });
-    S.cmtDocs[S.me.id] = next; rebuildComments(); refreshSocial();
-    try { await S.ccol.doc(S.me.id).set({ items: next }); } catch (e) { S.cmtDocs[S.me.id] = cur; rebuildComments(); refreshSocial(); toast("حذف نشد."); }
-  }
-  function cmtBtn(v, fn) {
-    var b = btn("sbtn", null, function (e) { e.stopPropagation(); fn(); }); b.setAttribute("aria-label", "کامنت‌ها");
-    b.dataset.cc = v.id; b.appendChild(ic("chat")); b.appendChild(el("span", "n"));
-    b.querySelector(".n").textContent = fa.format(nComments(v.id)); return b;
-  }
-  function shareBtn(v) {
-    var b = btn("sbtn", null, async function (e) {
-      e.stopPropagation();
-      var url = location.href.split("#")[0];
-      try { await navigator.clipboard.writeText(v.title + "\n" + url); toast("لینک سایت کپی شد."); }
-      catch (er) { toast("کپی نشد. آدرس صفحه رو دستی کپی کن."); }
-    });
-    b.setAttribute("aria-label", "اشتراک‌گذاری"); b.appendChild(ic("share")); b.appendChild(el("span", "n", "اشتراک"));
-    return b;
-  }
-  function fillComments(list) {
-    var id = list.dataset.clist; list.textContent = "";
-    var arr = S.comments[id] || [];
-    if (!arr.length) { list.appendChild(el("div", "sub", "هنوز کامنتی نیست. اولین نفر باش.")); return; }
-    arr.forEach(function (c) {
-      var r = el("div", "cm"), src = avatarOf(c.userId);
-      if (src) { var im = document.createElement("img"); im.src = src; im.alt = ""; r.appendChild(im); }
-      var tx = el("div", "tx"); tx.appendChild(el("b", null, nameOf(c.userId)));
-      if (c.createdAt) tx.appendChild(el("span", "dt", ago(c.createdAt)));
-      tx.appendChild(el("div", null, c.text)); r.appendChild(tx);
-      if (c.userId && c.userId === S.me.id) r.appendChild(btn("x", "حذف", function () { delComment(c); }));
-      list.appendChild(r);
-    });
-  }
-  function refreshSocial() {
-    document.querySelectorAll("[data-like]").forEach(setLikeBtn);
-    document.querySelectorAll("[data-st]").forEach(setStat);
-    document.querySelectorAll("[data-cc]").forEach(function (b) { b.querySelector(".n").textContent = fa.format(nComments(b.dataset.cc)); });
-    document.querySelectorAll("[data-clist]").forEach(fillComments);
-  }
-  function commentsBox(v) {
-    var box = el("div", "cbox");
-    var list = el("div", "clist"); list.dataset.clist = v.id; fillComments(list); box.appendChild(list);
-    if (S.me.id && S.ccol) {
-      var f = el("form", "cform"), i = document.createElement("input");
-      i.type = "text"; i.maxLength = 300; i.placeholder = "کامنتت رو بنویس…"; i.id = "cin-" + v.id + "-" + Math.random().toString(36).slice(2, 6); i.setAttribute("aria-label", "کامنت");
-      var s = el("button", "btn", "ارسال"); s.type = "submit"; f.appendChild(i); f.appendChild(s);
-      f.addEventListener("submit", async function (e) {
-        e.preventDefault(); s.disabled = true;
-        if (await postComment(v, i.value)) i.value = "";
-        s.disabled = false;
-      });
-      f.addEventListener("keydown", function (e) { e.stopPropagation(); });
-      box.appendChild(f);
-    } else box.appendChild(el("div", "sub", "برای کامنت گذاشتن باید وارد حسابت بشی."));
-    return box;
-  }
-  async function resolveNames() {
-    if (!S.userCap || !S.userCap.profiles) return;
-    var ids = {};
-    S.videos.forEach(function (v) { if (v.ownerId) ids[v.ownerId] = 1; });
-    Object.keys(S.comments).forEach(function (k) { S.comments[k].forEach(function (c) { if (c.userId) ids[c.userId] = 1; }); });
-    ids = Object.keys(ids); if (!ids.length) return;
-    try { var ps = await S.userCap.profiles(ids); ids.forEach(function (i) { if (ps[i]) { S.names[i] = sane(ps[i].name, 60); S.avatars[i] = okAvatar(ps[i].avatarUrl) ? ps[i].avatarUrl : ""; } }); } catch (e) {}
-  }
-  function recordView(v) {
-    if (!v || !S.me.id || !S.vcol) return;
-    var cur = S.viewDocs[S.me.id] || []; if (cur.indexOf(v.id) >= 0) return;
-    var next = cur.concat(v.id).slice(-MAXW); S.viewDocs[S.me.id] = next; rebuildMap(S.viewDocs, "views");
-    S.vcol.doc(S.me.id).set({ ids: next }).catch(function () {});
-  }
+  var u=await userById(other),cid=[me.uid,other].sort().join("_");
+  m.appendChild(el("h1",null,u.name));
+  var lst=el("div");lst.style.cssText="display:flex;flex-direction:column;gap:6px;min-height:200px";m.appendChild(lst);
+  var blocked=mine.banned||(mine.noChat&&!isStaff());
+  if(blocked)m.appendChild(el("div","sub","ارسال پیام برای شما غیرفعال شده."));
+  else{var f=el("form","cform"),i=inp("text","پیام…"),b=el("button","btn","ارسال");b.type="submit";f.appendChild(i);f.appendChild(b);m.appendChild(f);
+    f.onsubmit=async function(e){e.preventDefault();var t=clean(i.value,500);if(!t)return;i.value="";
+      try{await db.collection("chats").doc(cid).collection("msgs").add({from:me.uid,text:t,at:FV.serverTimestamp()});
+        await db.collection("chats").doc(cid).set({members:[me.uid,other],text:t,last:FV.serverTimestamp()})}catch(er){toast("ارسال نشد.")}}}
+  cunsub=db.collection("chats").doc(cid).collection("msgs").orderBy("at").limitToLast(100).onSnapshot(function(s){
+    lst.textContent="";s.docs.forEach(function(d){var x=d.data(),p=el("div",null,x.text);p.style.cssText="padding:6px 12px;border-radius:12px;max-width:80%;overflow-wrap:anywhere;background:"+(x.from===me.uid?"var(--accent);color:var(--accent-ink);align-self:flex-start":"var(--surface-2);align-self:flex-end");lst.appendChild(p)});window.scrollTo(0,document.body.scrollHeight)});
+}
 
-  /* ---------- shared building blocks ---------- */
-  function whoLink(id) {
-    var a = el("a", "who"); a.href = "#profile";
-    var src = avatarOf(id); if (src) { var im = document.createElement("img"); im.src = src; im.alt = ""; a.appendChild(im); }
-    a.appendChild(document.createTextNode(nameOf(id)));
-    a.addEventListener("click", function (e) { e.stopPropagation(); S.viewing = id; closePlayer(); });
-    return a;
-  }
-  function thumb(v) {
-    var d = el("div", "thumb");
-    if (v.thumbId) { var im = document.createElement("img"); im.src = "/_blob/" + v.thumbId; im.alt = ""; im.loading = "lazy"; d.appendChild(im); }
-    else { var vv = document.createElement("video"); vv.src = v.url + "#t=0.5"; vv.preload = "metadata"; vv.muted = true; vv.playsInline = true; d.appendChild(vv); }
-    if (v.dur) d.appendChild(el("span", "dur mono", fmtDur(v.dur)));
-    if (v.kind === "short") d.appendChild(el("span", "kp", "شورت"));
-    var p = el("div", "play"), s = el("span"); s.appendChild(ic("play")); p.appendChild(s); d.appendChild(p);
-    return d;
-  }
-  function metaRow(v) {
-    var m = el("div", "meta");
-    if (v.ownerId) m.appendChild(whoLink(v.ownerId));
-    m.appendChild(stat("v", v.id)); m.appendChild(stat("l", v.id));
-    if (v.createdAt) m.appendChild(el("span", null, ago(v.createdAt)));
-    return m;
-  }
-  function card(v, own) {
-    var c = el("article", "vc"); c.tabIndex = 0; c.setAttribute("role", "button"); c.setAttribute("aria-label", v.title);
-    c.addEventListener("click", function () { openPlayer(v.id); });
-    c.addEventListener("keydown", function (e) { if (e.target === c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openPlayer(v.id); } });
-    c.appendChild(thumb(v)); c.appendChild(el("h3", null, v.title)); c.appendChild(metaRow(v));
-    if (own) {
-      var a = el("div", "actions");
-      a.addEventListener("click", function (e) { e.stopPropagation(); });
-      var eb = btn("ghost", null, function () { S.editId = v.id; render(); }); eb.appendChild(ic("edit")); eb.appendChild(document.createTextNode("ویرایش")); a.appendChild(eb);
-      var d = btn("ghost del", null, function () { delVideo(v); }); d.appendChild(ic("trash")); d.appendChild(document.createTextNode(S.confirmId === v.id ? "مطمئنی؟ حذف شود" : "حذف"));
-      if (S.confirmId === v.id) d.className = "ghost confirm";
-      a.appendChild(d); c.appendChild(a);
-    }
-    return c;
-  }
-  async function delVideo(v) {
-    if (v.ownerId !== S.me.id || !S.col) return;
-    if (S.confirmId !== v.id) { S.confirmId = v.id; render(); setTimeout(function () { if (S.confirmId === v.id) { S.confirmId = null; render(); } }, 4000); return; }
-    S.confirmId = null;
-    try {
-      await saveMine((S.vraw[S.me.id] || []).filter(function (r) { return r.id !== v.lid; }));
-      toast("ویدیو حذف شد.");
-      if (S.assets) { try { await S.assets.delete(v.assetId); if (v.thumbId) await S.assets.delete(v.thumbId); } catch (e) {} }
-    } catch (e) { toast("حذف انجام نشد."); }
-    render();
-  }
-  function editForm(v) {
-    var f = el("form", "edit");
-    var t = document.createElement("input"); t.type = "text"; t.id = "et-" + v.id; t.value = v.title; t.maxLength = 120; t.setAttribute("aria-label", "عنوان");
-    var d = document.createElement("textarea"); d.id = "ed-" + v.id; d.value = v.desc; d.maxLength = 800; d.setAttribute("aria-label", "توضیحات"); d.placeholder = "توضیحات";
-    var k = document.createElement("select"); k.id = "ek-" + v.id; k.setAttribute("aria-label", "نوع");
-    [["video", "ویدیو"], ["short", "شورت"]].forEach(function (o) { var op = el("option", null, o[1]); op.value = o[0]; if (v.kind === o[0]) op.selected = true; k.appendChild(op); });
-    var a = el("div", "actions"), sv = el("button", "btn", "ذخیره"); sv.type = "submit";
-    a.appendChild(sv); a.appendChild(btn("ghost", "انصراف", function () { S.editId = null; render(); }));
-    f.appendChild(t); f.appendChild(d); f.appendChild(k); f.appendChild(a);
-    f.addEventListener("submit", async function (e) {
-      e.preventDefault(); sv.disabled = true;
-      if (v.ownerId !== S.me.id) return;
-      try {
-        await saveMine((S.vraw[S.me.id] || []).map(function (r) { return r.id === v.lid ? Object.assign({}, r, { title: sane(t.value, 120) || "بدون نام", description: sane(d.value, 800, true), kind: k.value === "short" ? "short" : "video" }) : r; }));
-        S.editId = null; toast("ذخیره شد.");
-      } catch (er) { toast("ذخیره نشد."); sv.disabled = false; return; }
-      render();
-    });
-    return f;
-  }
-  function emptyBox(t, s, cta) {
-    var e = el("div", "empty"); e.appendChild(el("b", null, t)); e.appendChild(el("span", null, s));
-    if (cta) { var a = el("a", "btn", cta[0]); a.href = cta[1]; e.appendChild(a); }
-    return e;
-  }
-  function skeleton(n) { var g = el("div", "grid"); for (var i = 0; i < n; i++) g.appendChild(el("div", "sk")); return g; }
-
-  /* ---------- player overlay ---------- */
-  var lastFocus = null;
-  function descBlock(v, wrapCls) {
-    var box = el("div", wrapCls || "descbox");
-    var d = el("p", "desc clamp", v.desc || "توضیحاتی برای این ویدیو نوشته نشده."); box.appendChild(d);
-    if (v.desc && (v.desc.length > 140 || v.desc.indexOf("\n") >= 0)) {
-      box.appendChild(btn("more", "بیشتر", function (e) { var cl = d.classList.toggle("clamp"); e.currentTarget.textContent = cl ? "بیشتر" : "کمتر"; }));
-    }
-    return box;
-  }
-  function openPlayer(id) {
-    var v = S.byId[id]; if (!v) return;
-    lastFocus = document.activeElement; S.openId = id; recordView(v);
-    var ov = $("#overlay"); ov.textContent = ""; ov.hidden = false; ov.scrollTop = 0; document.body.classList.add("lock");
-    var pl = el("div", "pl"), bar = el("div", "bar");
-    bar.appendChild(el("span", "count", v.kind === "short" ? "شورت" : "ویدیو"));
-    var cl = btn("pclose", null, closePlayer); cl.setAttribute("aria-label", "بستن"); cl.appendChild(ic("x")); bar.appendChild(cl); pl.appendChild(bar);
-
-    var main = el("div", "pmain");
-    var vid = document.createElement("video"); vid.controls = true; vid.autoplay = true; vid.playsInline = true; vid.src = v.url;
-    if (v.thumbId) vid.poster = "/_blob/" + v.thumbId;
-    if (v.kind === "short") vid.className = "portrait";
-    main.appendChild(vid);
-    var sp = el("div", "speed"); sp.appendChild(el("span", null, "سرعت"));
-    [0.5, 1, 1.5, 2].forEach(function (r) {
-      var b = btn("chip", r === 1 ? "عادی" : fa.format(r) + "×", function () { vid.playbackRate = r; sp.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); }); });
-      b.setAttribute("aria-pressed", r === 1 ? "true" : "false"); sp.appendChild(b);
-    });
-    main.appendChild(sp);
-    main.appendChild(el("h1", null, v.title));
-    main.appendChild(metaRow(v));
-    var soc = el("div", "soc"); soc.appendChild(likeBtn(v)); soc.appendChild(shareBtn(v));
-    soc.appendChild(cmtBtn(v, function () { var c = $("#pc"); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); }));
-    main.appendChild(soc); main.appendChild(descBlock(v));
-    var ch = el("h2", null, "کامنت‌ها"); ch.id = "pc"; main.appendChild(ch); main.appendChild(commentsBox(v));
-    pl.appendChild(main);
-
-    var side = el("div", "side"); side.appendChild(el("h2", null, "بعدی"));
-    var others = S.videos.filter(function (x) { return x.id !== id; }).slice(0, 8);
-    if (!others.length) side.appendChild(el("div", "sub", "ویدیوی دیگه‌ای نیست."));
-    others.forEach(function (o) {
-      var m = el("div", "mini"); m.tabIndex = 0; m.setAttribute("role", "button");
-      m.appendChild(thumb(o));
-      var t = el("div"); t.appendChild(el("h3", null, o.title)); t.appendChild(metaRow(o)); m.appendChild(t);
-      var go = function () { openPlayer(o.id); };
-      m.addEventListener("click", go); m.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
-      side.appendChild(m);
-    });
-    pl.appendChild(side); ov.appendChild(pl); refreshSocial(); cl.focus();
-  }
-  function closePlayer() {
-    var ov = $("#overlay"); if (!ov || ov.hidden) return;
-    var v = ov.querySelector("video"); if (v) v.pause();
-    ov.hidden = true; ov.textContent = ""; S.openId = null; document.body.classList.remove("lock");
-    if (lastFocus && lastFocus.focus && document.contains(lastFocus)) try { lastFocus.focus(); } catch (e) {}
-  }
-
-  /* ---------- watch ---------- */
-  function chips(opts, key) {
-    var w = el("div", "chips");
-    opts.forEach(function (o) {
-      var b = btn("chip", o[1], function () { S[key] = o[0]; w.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); }); fillWatch(); });
-      b.setAttribute("aria-pressed", S[key] === o[0] ? "true" : "false"); w.appendChild(b);
-    });
-    return w;
-  }
-  function pWatch(m) {
-    var tb = el("div", "tb"), sw = el("label", "search");
-    sw.appendChild(ic("search"));
-    var si = document.createElement("input"); si.type = "search"; si.id = "q"; si.placeholder = "جستجو در عنوان، توضیحات و نام کاربر…"; si.value = S.q; si.setAttribute("aria-label", "جستجو");
-    si.addEventListener("input", function () { S.q = si.value; fillWatch(); });
-    sw.appendChild(si); tb.appendChild(sw);
-    tb.appendChild(chips([["new", "جدیدترین"], ["likes", "پرلایک"], ["views", "پربازدید"]], "sort"));
-    tb.appendChild(chips([["all", "همه"], ["video", "ویدیو"], ["short", "شورت"]], "kind"));
-    m.appendChild(tb);
-    var hero = el("div"); hero.id = "hero"; m.appendChild(hero);
-    var head = el("div", "row"); head.appendChild(el("h2", null, "ویدیوها")); var cnt = el("span", "count"); cnt.id = "vcount"; head.appendChild(cnt); m.appendChild(head);
-    var g = el("div"); g.id = "vgrid"; m.appendChild(g);
-    fillWatch();
-  }
-  function fillWatch() {
-    var g = $("#vgrid"), hero = $("#hero"); if (!g) return;
-    g.textContent = ""; hero.textContent = "";
-    if (!S.loaded) { g.appendChild(skeleton(6)); return; }
-    var list = S.videos.slice();
-    if (S.kind !== "all") list = list.filter(function (v) { return v.kind === S.kind; });
-    var q = S.q.trim().toLowerCase();
-    if (q) list = list.filter(function (v) { return (v.title + " " + v.desc + " " + nameOf(v.ownerId)).toLowerCase().indexOf(q) >= 0; });
-    if (S.sort === "likes") list.sort(function (a, b) { return nLikes(b.id) - nLikes(a.id); });
-    if (S.sort === "views") list.sort(function (a, b) { return nViews(b.id) - nViews(a.id); });
-    $("#vcount").textContent = fa.format(list.length) + " مورد";
-    if (!S.dbOn) g.appendChild(el("div", "note", "لیست مشترک در این نمایش فعال نیست، برای همین ویدیوهای ذخیره‌شده دیده نمی‌شن."));
-    if (!list.length) {
-      g.appendChild(S.videos.length ? emptyBox("چیزی پیدا نشد", "عبارت دیگه‌ای رو جستجو کن یا فیلترها رو عوض کن.")
-        : emptyBox("هنوز ویدیویی نیست", "اولین ویدیو رو آپلود کن تا اینجا نمایش داده بشه.", ["آپلود ویدیو", "#upload"]));
-      return;
-    }
-    var rest = list;
-    if (!q && S.sort === "new" && S.kind === "all" && list.length > 1) {
-      var f = list[0]; rest = list.slice(1);
-      var h = el("div", "hero"); h.tabIndex = 0; h.setAttribute("role", "button"); h.setAttribute("aria-label", f.title);
-      h.addEventListener("click", function () { openPlayer(f.id); });
-      h.addEventListener("keydown", function (e) { if (e.target === h && e.key === "Enter") openPlayer(f.id); });
-      h.appendChild(thumb(f));
-      var cv = el("div", "cover"); cv.appendChild(el("h2", null, f.title)); if (f.desc) cv.appendChild(el("p", null, f.desc));
-      cv.appendChild(metaRow(f));
-      var bb = el("span", "btn"); bb.appendChild(ic("play")); bb.appendChild(document.createTextNode("پخش")); cv.appendChild(bb);
-      h.appendChild(cv); hero.appendChild(h);
-    }
-    var grid = el("div", "grid"); rest.forEach(function (v) { grid.appendChild(card(v)); }); g.appendChild(grid);
-    refreshSocial();
-  }
-
-  /* ---------- shorts ---------- */
-  var io = null;
-  function setMuted(m) {
-    S.muted = m;
-    document.querySelectorAll(".feed video").forEach(function (v) { v.muted = m; });
-    document.querySelectorAll(".snd").forEach(function (b) { b.textContent = ""; b.appendChild(ic(m ? "mute" : "vol")); });
-  }
-  function burst(s, e) {
-    var r = s.getBoundingClientRect(), b = el("div", "burst");
-    b.style.left = (e.clientX - r.left) + "px"; b.style.top = (e.clientY - r.top) + "px";
-    b.innerHTML = '<svg viewBox="0 0 24 24">' + ICON.heart + "</svg>"; s.appendChild(b);
-    setTimeout(function () { b.remove(); }, 800);
-  }
-  function pShorts(m) {
-    var list = S.videos.filter(function (v) { return v.kind === "short"; });
-    if (!S.loaded) { m.appendChild(skeleton(3)); return; }
-    if (!list.length) { m.appendChild(emptyBox("هنوز شورتی نیست", "ویدیوی عمودی و کوتاه آپلود کن تا اینجا مثل ریلز پخش بشه.", ["آپلود شورت", "#upload"])); return; }
-    var feed = el("div", "feed"); feed.id = "feed"; feed.tabIndex = 0; feed.setAttribute("aria-label", "فید شورت");
-    feed.dataset.key = list.map(function (v) { return v.id; }).join(",");
-    io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        var vid = e.target.querySelector("video");
-        if (e.isIntersecting && e.intersectionRatio > 0.7) { e.target.dataset.active = "1"; var p = vid.play(); if (p && p.catch) p.catch(function () {}); recordView(S.byId[e.target.dataset.id]); }
-        else { e.target.dataset.active = ""; vid.pause(); e.target.classList.remove("ps"); }
-      });
-    }, { root: feed, threshold: [0, 0.7] });
-    list.forEach(function (v, idx) {
-      var s = el("div", "short"); s.dataset.id = v.id;
-      var vid = document.createElement("video");
-      vid.src = v.url; vid.loop = true; vid.muted = S.muted; vid.playsInline = true; vid.preload = "metadata";
-      if (v.thumbId) vid.poster = "/_blob/" + v.thumbId;
-      s.appendChild(vid);
-      var ind = el("div", "ind"), isp = el("span"); isp.appendChild(ic("pause")); ind.appendChild(isp); s.appendChild(ind);
-      var pb = el("div", "pbar"), pi = el("i"); pb.appendChild(pi); s.appendChild(pb);
-      vid.addEventListener("timeupdate", function () { if (vid.duration) pi.style.width = (vid.currentTime / vid.duration * 100) + "%"; });
-      var lastTap = 0, tapT = null;
-      s.addEventListener("click", function (e) {
-        if (e.target.closest("button,a,.sheet,input")) return;
-        var now = Date.now();
-        if (now - lastTap < 300) { clearTimeout(tapT); lastTap = 0; burst(s, e); if (!isLiked(v.id)) toggleLike(v); }
-        else { lastTap = now; tapT = setTimeout(function () { if (vid.paused) { vid.play().catch(function () {}); s.classList.remove("ps"); } else { vid.pause(); s.classList.add("ps"); } }, 300); }
-      });
-      var snd = btn("snd", null, function (e) { e.stopPropagation(); setMuted(!S.muted); }); snd.setAttribute("aria-label", "صدا"); s.appendChild(snd);
-      s.appendChild(el("span", "pos mono", fa.format(idx + 1) + "/" + fa.format(list.length)));
-      var cap = el("div", "cap"); cap.appendChild(el("h3", null, v.title));
-      if (v.desc) cap.appendChild(el("p", "desc", v.desc));
-      if (v.ownerId) cap.appendChild(whoLink(v.ownerId));
-      s.appendChild(cap);
-      var sheet = el("div", "sheet"); sheet.hidden = true;
-      var top = el("div", "top2"); top.appendChild(el("h2", null, "کامنت‌ها")); top.appendChild(btn("ghost", "بستن", function () { sheet.hidden = true; }));
-      sheet.appendChild(top); sheet.appendChild(commentsBox(v));
-      var rail = el("div", "rail"); rail.appendChild(likeBtn(v));
-      rail.appendChild(cmtBtn(v, function () { sheet.hidden = !sheet.hidden; })); rail.appendChild(shareBtn(v));
-      s.appendChild(rail); s.appendChild(sheet);
-      feed.appendChild(s); io.observe(s);
-    });
-    m.appendChild(feed); m.appendChild(el("div", "keys", "↑ ↓ جابه‌جایی · دابل‌کلیک لایک · M صدا · فاصله پخش و توقف"));
-    setMuted(S.muted); refreshSocial();
-  }
-
-  /* ---------- upload ---------- */
-  function probe(file) {
-    return new Promise(function (res) {
-      var v = document.createElement("video"), u = URL.createObjectURL(file), done = false;
-      function fin(r) { if (done) return; done = true; try { URL.revokeObjectURL(u); } catch (e) {} res(r); }
-      v.muted = true; v.playsInline = true; v.preload = "auto";
-      v.onloadedmetadata = function () {
-        var info = { w: v.videoWidth, h: v.videoHeight, d: isFinite(v.duration) ? v.duration : 0, thumb: null };
-        v.onseeked = function () {
-          try {
-            var k = Math.min(1, 640 / Math.max(info.w, info.h)), cv = document.createElement("canvas");
-            cv.width = Math.max(1, Math.round(info.w * k)); cv.height = Math.max(1, Math.round(info.h * k));
-            cv.getContext("2d").drawImage(v, 0, 0, cv.width, cv.height);
-            cv.toBlob(function (b) { info.thumb = b; fin(info); }, "image/jpeg", 0.8);
-          } catch (e) { fin(info); }
-        };
-        v.currentTime = info.d ? Math.min(1, info.d * 0.1) : 0.1;
-        setTimeout(function () { fin(info); }, 7000);
-      };
-      v.onerror = function () { fin(null); };
-      setTimeout(function () { fin(null); }, 12000);
-      v.src = u;
-    });
-  }
-  function autoKind(q) { var i = q.info; return i && i.h > i.w && i.d <= 180 ? "short" : "video"; }
-  async function sniff(f) {
-    try {
-      var b = new Uint8Array(await f.slice(0, 16).arrayBuffer());
-      if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) return "video/mp4";
-      if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return "video/webm";
-    } catch (e) {}
-    return "";
-  }
-  function typeOf(f) { return /^video\/(mp4|webm)$/.test(f.type) ? f.type : (/\.webm$/i.test(f.name) ? "video/webm" : "video/mp4"); }
-
-  async function doUpload(q) {
-    if (q.state !== "draft") return;
-    q.state = "up"; renderQueue();
-    try {
-      if (!S.me.id || !S.col) throw { code: "auth" };
-      if ((S.vraw[S.me.id] || []).length >= MAXV) throw { code: "limit" };
-      var mime = await sniff(q.file); if (!mime) throw { code: "badfile" };
-      var up = await S.assets.upload(q.file, { type: mime });
-      var thumbId = "";
-      if (q.info && q.info.thumb) { try { thumbId = (await S.assets.upload(q.info.thumb, { type: "image/jpeg" })).id; } catch (e) {} }
-      var rec = { id: rid(), assetId: up.id, thumbId: thumbId, title: sane(q.title, 120) || "بدون نام", description: sane(q.desc, 800, true), size: up.sizeBytes, dur: q.info ? Math.round(q.info.d) : 0, kind: q.kind || autoKind(q), createdAt: new Date().toISOString() };
-      await saveMine([rec].concat(S.vraw[S.me.id] || []));
-      q.state = "ok"; q.docId = S.me.id + "." + rec.id; q.msg = (q.kind || autoKind(q)) === "short" ? "به شورت‌ها اضافه شد" : "آپلود شد";
-    } catch (e) {
-      q.state = "err"; var c = e && e.code;
-      q.msg = c === "limit" ? "به سقف ۸۰ ویدیو برای هر کاربر رسیدی. یکی رو حذف کن" : c === "auth" ? "برای آپلود باید با حسابت وارد باشی" : c === "badfile" ? "این فایل ویدیوی MP4 یا WEBM واقعی نیست" : c === "too_large" ? "حجم فایل از سقف پلتفرم (۲۰ مگابایت) بیشتره" : c === "unsupported_type" ? "این فرمت پشتیبانی نمی‌شه. MP4 یا WEBM بذار" : c === "quota_or_state" ? "فضای ذخیره‌سازی پر شده" : c === "rate_limited" ? "درخواست‌ها زیاده. کمی بعد دوباره امتحان کن" : "آپلود انجام نشد";
-    }
-    renderQueue();
-    if (S.assets) S.assets.list().then(function (r) { S.usage = r.usage; var u = $("#usage"); if (u) u.textContent = "فضای استفاده‌شده: " + fmtSize(r.usage.bytes) + " از " + fmtSize(r.usage.maxBytes); }).catch(function () {});
-  }
-  function renderQueue() {
-    var box = $("#queue"); if (!box) return; box.textContent = "";
-    var drafts = S.queue.filter(function (q) { return q.state === "draft"; });
-    if (drafts.length) {
-      var go = el("button", "btn", null); go.type = "button"; go.appendChild(ic("up")); go.appendChild(document.createTextNode("آپلود " + fa.format(drafts.length) + " ویدیو"));
-      go.addEventListener("click", async function () { for (var i = 0; i < drafts.length; i++) await doUpload(drafts[i]); });
-      box.appendChild(go);
-    }
-    S.queue.forEach(function (q, idx) {
-      var r = el("div", "q"), pv = el("div", "pv"); q.pvEl = pv;
-      if (q.thumbUrl) { var im = document.createElement("img"); im.src = q.thumbUrl; im.alt = ""; pv.appendChild(im); } else pv.textContent = q.probing ? "…" : "بدون پیش‌نمایش";
-      r.appendChild(pv);
-      var fl = el("div", "fields");
-      if (q.state === "draft") {
-        var ti = document.createElement("input"); ti.type = "text"; ti.value = q.title; ti.maxLength = 120; ti.id = "dt" + idx; ti.setAttribute("aria-label", "عنوان");
-        ti.addEventListener("input", function () { q.title = ti.value.trim() || "بدون نام"; });
-        var de = document.createElement("textarea"); de.value = q.desc; de.maxLength = 800; de.placeholder = "توضیحات ویدیو (اختیاری)"; de.id = "dd" + idx; de.setAttribute("aria-label", "توضیحات");
-        de.addEventListener("input", function () { q.desc = de.value; });
-        var two = el("div", "two"), sel = document.createElement("select"); sel.id = "dk" + idx; sel.setAttribute("aria-label", "نوع");
-        [["", "نوع: خودکار"], ["video", "ویدیو"], ["short", "شورت"]].forEach(function (o) { var op = el("option", null, o[1]); op.value = o[0]; if (q.kind === o[0]) op.selected = true; sel.appendChild(op); });
-        sel.addEventListener("change", function () { q.kind = sel.value; });
-        two.appendChild(sel); two.appendChild(el("span", "s mono", fmtSize(q.file.size) + (q.info ? " · " + fmtDur(q.info.d) : "")));
-        two.appendChild(btn("ghost del", "حذف", function () { S.queue.splice(S.queue.indexOf(q), 1); renderQueue(); }));
-        fl.appendChild(ti); fl.appendChild(de); fl.appendChild(two);
-      } else {
-        fl.appendChild(el("div", "t", q.title));
-        fl.appendChild(el("div", "s " + (q.state === "err" ? "err" : q.state === "ok" ? "ok" : ""), q.state === "up" ? "در حال آپلود…" : q.msg || ""));
-        if (q.state === "up") fl.appendChild(el("div", "prog"));
-        if (q.state === "ok") { var a = el("div", "actions"); a.appendChild(btn("ghost", "مشاهده", function () { if (S.byId[q.docId]) openPlayer(q.docId); else toast("چند لحظه دیگه دوباره امتحان کن."); })); fl.appendChild(a); }
-        if (q.state === "err") { var a2 = el("div", "actions"); a2.appendChild(btn("ghost", "حذف از لیست", function () { S.queue.splice(S.queue.indexOf(q), 1); renderQueue(); })); fl.appendChild(a2); }
-      }
-      r.appendChild(fl); box.appendChild(r);
-    });
-  }
-  function addFiles(files) {
-    if (!S.assets) { toast("آپلود برای این حساب فعال نیست."); return; }
-    Array.prototype.slice.call(files, 0, 10).forEach(function (f) {
-      var okType = /^video\/(mp4|webm)$/.test(f.type) || /\.(mp4|webm)$/i.test(f.name);
-      var q = { file: f, title: f.name.replace(/\.[^.]+$/, "") || "بدون نام", desc: "", kind: "", state: "draft", info: null, thumbUrl: "", probing: true };
-      if (!okType) { q.state = "err"; q.msg = "فرمت پشتیبانی نمی‌شه. فقط MP4 و WEBM."; q.probing = false; }
-      else if (f.size > MAX) { q.state = "err"; q.msg = "بزرگ‌تر از ۲۰ مگابایته و پلتفرم اجازه‌ی آپلودش رو نمی‌ده."; q.probing = false; }
-      if (S.queue.filter(function (x) { return x.state === "draft"; }).length >= 20) { toast("حداکثر ۲۰ فایل همزمان."); return; }
-      S.queue.unshift(q);
-      if (q.state === "draft") sniff(f).then(function (t) { if (!t && q.state === "draft") { q.state = "err"; q.msg = "این فایل ویدیوی MP4 یا WEBM واقعی نیست."; renderQueue(); } });
-      if (q.state === "draft") probe(f).then(function (info) {
-        q.info = info; q.probing = false;
-        if (info && info.thumb) { q.thumbUrl = URL.createObjectURL(info.thumb); if (q.pvEl) { q.pvEl.textContent = ""; var im = document.createElement("img"); im.src = q.thumbUrl; im.alt = ""; q.pvEl.appendChild(im); } }
-        else if (q.pvEl) q.pvEl.textContent = "بدون پیش‌نمایش";
-        if (info && !q.kind && q.state === "draft") renderQueueMeta();
-      });
-    });
-    renderQueue();
-  }
-  function renderQueueMeta() { /* sizes/durations show on next render; avoid rebuilding inputs while the user types */ }
-  function pUpload(m) {
-    var h = el("div"); var h1 = el("h1"); h1.innerHTML = "آپلود <span>ویدیو</span>"; h.appendChild(h1);
-    h.appendChild(el("p", "sub", "عنوان و توضیحات بنویس. ویدیوی عمودی و کوتاه خودکار تو شورت‌ها می‌ره و از هر ویدیو یه تصویر بندانگشتی ساخته می‌شه.")); m.appendChild(h);
-    if (!S.assets) m.appendChild(el("div", "note", S.loaded ? "آپلود فقط برای صاحب و ویرایشگرهای سایت فعاله. اگه صاحب سایتی با حسابت وارد شو و صفحه رو دوباره باز کن." : "در حال اتصال به ذخیره‌سازی…"));
-    var d = el("label", "drop"), inp = document.createElement("input");
-    inp.type = "file"; inp.accept = "video/mp4,video/webm,.mp4,.webm"; inp.multiple = true; inp.id = "file"; d.appendChild(inp);
-    var u = el("div", "up-icon"); u.appendChild(ic("up")); d.appendChild(u);
-    d.appendChild(el("h2", null, "ویدیوها رو اینجا رها کن")); d.appendChild(el("p", null, "یا برای انتخاب فایل بزن روی دکمه"));
-    d.appendChild(el("span", "btn", "انتخاب ویدیو")); d.appendChild(el("span", "count", "MP4 · WEBM · MAX 20 MB"));
-    inp.addEventListener("change", function () { addFiles(inp.files); inp.value = ""; });
-    ["dragenter", "dragover"].forEach(function (n) { d.addEventListener(n, function (e) { e.preventDefault(); d.classList.add("over"); }); });
-    ["dragleave", "drop"].forEach(function (n) { d.addEventListener(n, function (e) { e.preventDefault(); d.classList.remove("over"); }); });
-    d.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
-    m.appendChild(d);
-    var qb = el("div", "queue"); qb.id = "queue"; m.appendChild(qb); renderQueue();
-    var us = el("p", "count", S.usage ? "فضای استفاده‌شده: " + fmtSize(S.usage.bytes) + " از " + fmtSize(S.usage.maxBytes) : ""); us.id = "usage"; m.appendChild(us);
-  }
-
-  /* ---------- profile + account ---------- */
-  function statTile(label, val) { var d = el("div"); d.appendChild(el("b", null, fa.format(val))); d.appendChild(document.createTextNode(label)); return d; }
-  function pProfile(m) {
-    var id = S.viewing || S.me.id; S.viewing = null;
-    var mine = !!id && id === S.me.id;
-    if (!id) { m.appendChild(emptyBox("وارد نشدی", "برای داشتن پروفایل باید با حساب Claude وارد بشی.")); return; }
-    if (!RX_UID.test(id)) { m.appendChild(emptyBox("پروفایل پیدا نشد", "")); return; }
-    var p = S.profiles[id] || {}, list = S.videos.filter(function (v) { return v.ownerId === id; });
-    var box = el("div", "panel"), me = el("div", "me"), src = avatarOf(id);
-    if (src) { var im = document.createElement("img"); im.src = src; im.alt = ""; me.appendChild(im); }
-    var t = el("div"); t.appendChild(el("div", "n", nameOf(id))); if (p.bio) t.appendChild(el("div", "sub", p.bio)); me.appendChild(t); box.appendChild(me);
-    var st = el("div", "stats");
-    st.appendChild(statTile("ویدیو", list.length));
-    st.appendChild(statTile("لایک", list.reduce(function (a, v) { return a + nLikes(v.id); }, 0)));
-    st.appendChild(statTile("بازدید", list.reduce(function (a, v) { return a + nViews(v.id); }, 0)));
-    box.appendChild(st);
-    if (mine) {
-      var l1 = el("label", "f", "نام نمایشی"), i1 = document.createElement("input"); i1.type = "text"; i1.id = "pname"; i1.maxLength = 40; i1.value = p.name || ""; i1.placeholder = S.me.name || "اسمت"; l1.appendChild(i1);
-      var l2 = el("label", "f", "درباره‌ی من"), i2 = document.createElement("textarea"); i2.id = "pbio"; i2.maxLength = 200; i2.value = p.bio || ""; l2.appendChild(i2);
-      var sv = btn("btn", "ذخیره"), msg = el("span", "count");
-      sv.addEventListener("click", async function () {
-        if (!S.pcol) { msg.textContent = "ذخیره‌سازی در دسترس نیست."; return; }
-        sv.disabled = true;
-        try { await S.pcol.doc(id).set({ name: sane(i1.value, 40), bio: sane(i2.value, 200, true) }); msg.textContent = "ذخیره شد."; }
-        catch (e) { msg.textContent = "ذخیره نشد. دوباره امتحان کن."; }
-        sv.disabled = false;
-      });
-      var r = el("div", "actions"); r.appendChild(sv); r.appendChild(msg); box.appendChild(l1); box.appendChild(l2); box.appendChild(r);
-    }
-    m.appendChild(box);
-    var hd = el("div", "row"); hd.appendChild(el("h2", null, mine ? "ویدیوهای من" : "ویدیوهای این کاربر")); hd.appendChild(el("span", "count", fa.format(list.length) + " مورد")); m.appendChild(hd);
-    if (!list.length) { m.appendChild(emptyBox("هنوز ویدیویی نیست", mine ? "از صفحه‌ی آپلود شروع کن." : "این کاربر ویدیویی آپلود نکرده.", mine ? ["آپلود ویدیو", "#upload"] : null)); return; }
-    var g = el("div", "grid");
-    list.forEach(function (v) {
-      if (mine && S.editId === v.id) { var w = el("div", "own"); w.appendChild(editForm(v)); g.appendChild(w); }
-      else g.appendChild(card(v, mine));
-    });
-    m.appendChild(g); refreshSocial();
-  }
-  function pAccount(m) {
-    var h1 = el("h1"); h1.innerHTML = "<span>اکانت</span>"; m.appendChild(h1);
-    var box = el("div", "panel"), me = el("div", "me"), im = document.createElement("img"); im.src = S.me.avatarUrl; im.alt = ""; me.appendChild(im);
-    var t = el("div"); t.appendChild(el("div", "n", S.me.id ? (S.me.name || "بدون نام") : "مهمان")); t.appendChild(el("div", "sub", S.me.id ? "وارد شدی" : "با حساب Claude وارد نشدی")); me.appendChild(t); box.appendChild(me);
-    var dl = el("dl", "kv");
-    function row(k, v, on) { dl.appendChild(el("dt", null, k)); dl.appendChild(el("dd", on ? "on" : null, v)); }
-    var mine = S.videos.filter(function (v) { return S.me.id && v.ownerId === S.me.id; });
-    row("آپلود ویدیو", S.assets ? "فعال" : "غیرفعال", !!S.assets);
-    row("لایک و کامنت", S.me.id && S.canWrite !== false ? "فعال" : "غیرفعال", !!(S.me.id && S.canWrite !== false));
-    row("نقش", S.me.isOwner ? "صاحب سایت" : S.me.canEdit ? "ویرایشگر" : "بیننده", false);
-    row("ویدیوهای من", fa.format(mine.length), false);
-    row("لایک دریافتی", fa.format(mine.reduce(function (a, v) { return a + nLikes(v.id); }, 0)), false);
-    box.appendChild(dl); m.appendChild(box);
-    m.appendChild(el("div", "note", "این سایت ثبت‌نام جدا نداره. با حساب Claude خودت وارد می‌شی و ورود و خروج از منوی claude.ai انجام می‌شه. دسترسی بقیه رو هم از منوی Share تعیین می‌کنی."));
-    var sec = el("div", "panel"); sec.appendChild(el("h2", null, "امنیت"));
-    ["لایک، کامنت، بازدید و پروفایل هر نفر توی سند مخصوص خودش ذخیره می‌شه و فقط خودش می‌تونه ازش بنویسه. کسی نمی‌تونه از طرف بقیه لایک یا کامنت بذاره.",
-     "ویدیوها فقط توسط صاحب و ویرایشگرهای سایت آپلود می‌شن و هر نفر فقط سند ویدیوهای خودش رو عوض می‌کنه.",
-     "هر چیزی که از ذخیره‌سازی خونده می‌شه قبل از نمایش پاک‌سازی و اعتبارسنجی می‌شه.",
-     "فایل آپلودی از نظر محتوای واقعی MP4 یا WEBM بودن بررسی می‌شه، نه فقط از روی پسوند."].forEach(function (t) { sec.appendChild(el("p", "sub", t)); });
-    m.appendChild(sec);
-  }
-
-  /* ---------- shell ---------- */
-  function buildNav() {
-    var n = $("#nav");
-    PAGES.forEach(function (p) { var a = el("a"); a.href = "#" + p[0]; a.dataset.p = p[0]; a.appendChild(ic(p[0])); a.appendChild(el("span", null, p[1])); n.appendChild(a); });
-  }
-  function render() {
-    var p = page();
-    document.querySelectorAll("#nav a").forEach(function (a) { if (a.dataset.p === p) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-    if (io) { io.disconnect(); io = null; }
-    var m = $("#main"); m.textContent = "";
-    ({ watch: pWatch, shorts: pShorts, upload: pUpload, profile: pProfile, account: pAccount })[p](m);
-  }
-  function onData() {
-    var p = page();
-    if (p === "watch") fillWatch();
-    else if (p === "shorts") { var f = $("#feed"), key = S.videos.filter(function (v) { return v.kind === "short"; }).map(function (v) { return v.id; }).join(","); if (!f || f.dataset.key !== key) { if (!f || !document.activeElement || !f.contains(document.activeElement) || document.activeElement.tagName !== "INPUT") render(); } }
-    else if (p === "profile" || p === "account") { var ae = document.activeElement; if (!(ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName) && $("#main").contains(ae))) render(); }
-    refreshSocial();
-  }
-  window.addEventListener("hashchange", function () { closePlayer(); render(); window.scrollTo(0, 0); });
-  document.addEventListener("keydown", function (e) {
-    var tag = (e.target && e.target.tagName) || "";
-    if (e.key === "Escape") { closePlayer(); return; }
-    if (/INPUT|TEXTAREA|SELECT/.test(tag) || page() !== "shorts" || S.openId) return;
-    var feed = $("#feed"); if (!feed) return;
-    var cur = feed.querySelector('.short[data-active="1"]'), vid = cur && cur.querySelector("video");
-    if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); feed.scrollBy({ top: feed.clientHeight, behavior: "smooth" }); }
-    else if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); feed.scrollBy({ top: -feed.clientHeight, behavior: "smooth" }); }
-    else if (e.key === "m") setMuted(!S.muted);
-    else if (e.key === "l" && cur) toggleLike(S.byId[cur.dataset.id]);
-    else if (e.key === " " && vid && tag !== "BUTTON") { e.preventDefault(); if (vid.paused) { vid.play().catch(function () {}); cur.classList.remove("ps"); } else { vid.pause(); cur.classList.add("ps"); } }
-  });
-
-  buildNav(); render();
-
-  /* ---------- connect storage ---------- */
-  (async function () {
-    try {
-      var c = window.claude; if (!c || !c.use) throw 0;
-      var user = await c.use("user");
-      if (user) { S.me = await user.me(); S.me.name = sane(S.me.name, 60); if (!okAvatar(S.me.avatarUrl)) S.me.avatarUrl = ""; if (S.me.id && !RX_UID.test(S.me.id)) S.me.id = null; S.userCap = user; try { S.canWrite = await user.can("data.write"); } catch (e) {} }
-      S.assets = await c.use("assets");
-      var db = await c.use("db");
-      if (db) {
-        S.dbOn = true; S.col = db.collection("videos"); S.pcol = db.collection("profiles");
-        S.lcol = db.collection("likes"); S.ccol = db.collection("comments"); S.vcol = db.collection("views");
-        S.pcol.onSnapshot(function (snap) {
-          var o = {}; snap.docs.forEach(function (d) { if (!RX_UID.test(d.id)) return; var x = d.data() || {}; o[d.id] = { name: sane(x.name, 40), bio: sane(x.bio, 200, true) }; });
-          S.profiles = o; onData();
-        }, function () {});
-        S.lcol.onSnapshot(function (snap) { S.likeDocs = parseKeyDocs(snap, MAXL); rebuildMap(S.likeDocs, "likes"); refreshSocial(); if (page() === "watch" && S.sort === "likes") fillWatch(); }, function () {});
-        S.vcol.onSnapshot(function (snap) { S.viewDocs = parseKeyDocs(snap, MAXW); rebuildMap(S.viewDocs, "views"); refreshSocial(); if (page() === "watch" && S.sort === "views") fillWatch(); }, function () {});
-        S.ccol.onSnapshot(async function (snap) { parseCmt(snap); refreshSocial(); await resolveNames(); refreshSocial(); }, function () {});
-        S.col.onSnapshot(async function (snap) { parseVideos(snap); S.loaded = true; await resolveNames(); onData(); }, function () { S.loaded = true; onData(); });
-      }
-      if (S.assets) { try { S.usage = (await S.assets.list()).usage; } catch (e) {} }
-      if (!db) S.loaded = true;
-      if (page() === "upload" || page() === "account" || !db) render();
-    } catch (e) { S.loaded = true; render(); }
-  })();
+/* ---------- router ---------- */
+var TABS=[["watch","تماشا"],["search","جستجو"],["upload","آپلود"],["chat","پیوی"],["me","پروفایل"]];
+async function render(){
+  if(cunsub){cunsub();cunsub=null}
+  var m=$("#main"),nav=$("#nav");m.textContent="";nav.textContent="";
+  if(me===undefined)return;
+  var h=(location.hash||"#watch").slice(1).split("/"),pg=h[0];
+  if(!me){return pAuth(m)}
+  if(!mine){return pSetup(m)}
+  if(mine.banned&&pg!=="me"){pg="me"}
+  TABS.forEach(function(t){var a=el("a",null,t[1]);a.href="#"+t[0];if(t[0]===pg||(pg==="u"&&t[0]==="me"&&0))a.setAttribute("aria-current","page");nav.appendChild(a)});
+  try{
+    if(pg==="upload")pUpload(m);else if(pg==="search")pSearch(m);else if(pg==="chat")await pChat(m,h[1]);
+    else if(pg==="u")await pProfile(m,h[1]);else if(pg==="me")await pProfile(m,mine.handle);else await pWatch(m);
+  }catch(e){m.appendChild(el("div","sub","خطا: "+(e.code||e.message)+" (اگه ایندکس Firestore خواسته، لینک داخل کنسول مرورگر رو باز کن.)"))}
+}
+window.addEventListener("hashchange",render);me=undefined;
 })();
-</script>
-
-</body></html>
+};</script>
+<script>
+(function(){
+var parts=["app","auth","firestore","storage"],V="10.12.2";
+var hosts=[function(p){return "https://cdnjs.cloudflare.com/ajax/libs/firebase/"+V+"/firebase-"+p+"-compat.min.js"},
+ function(p){return "https://www.gstatic.com/firebasejs/"+V+"/firebase-"+p+"-compat.js"},
+ function(p){return "https://cdn.jsdelivr.net/npm/firebase@"+V+"/firebase-"+p+"-compat.js"}];
+function load(p,h,cb){if(h>=hosts.length)return cb(false);var sc=document.createElement("script");sc.crossOrigin="anonymous";sc.src=hosts[h](p);sc.onload=function(){cb(true)};sc.onerror=function(){sc.remove();load(p,h+1,cb)};document.head.appendChild(sc)}
+function step(i){
+ if(i===parts.length){window.__app();return}
+ load(parts[i],0,function(ok){if(!ok){document.body.innerHTML='<p style="padding:24px;color:#fff;direction:rtl">کتابخانه Firebase لود نشد. اینترنت/فیلترشکن رو چک کن و صفحه رو رفرش کن. اگه داخل پیش‌نمایش کلاد باز کردی، فایل رو روی دامنه یا گیت‌هاب آپلود کن و اونجا باز کن.</p>';return}step(i+1)})}
+step(0);
+})();
+</script></body></html>
