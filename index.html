@@ -1,1 +1,994 @@
-https://github.com/TxFiNE/iranifreevideouploder
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>جعبه ویدیو</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  /* Layout: sticky top bar (tabs move to a bottom bar on phones). Watch = featured hero + filter chips + thumbnail grid.
+     Shorts = full-height snap feed. Player = full-screen overlay. Black ground, one orange accent, single dark theme by design. */
+  :root {
+    --bg: #0a0908;
+    --surface: #141210;
+    --surface-2: #1c1916;
+    --line: #2a2521;
+    --fg: #f5f0ea;
+    --muted: #a0968c;
+    --accent: #ff6a13;
+    --accent-hi: #ff8a3d;
+    --accent-ink: #1a0a00;
+    --glow: rgba(255, 106, 19, .16);
+    --danger: #ff5a5a;
+    --font-body: "Vazirmatn", "Tahoma", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-body);
+    font-size: 15px; line-height: 1.7; direction: rtl; margin: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 56px;
+  }
+  body.lock { overflow: hidden; }
+  [hidden] { display: none !important; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 50; }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  .ic { display: inline-flex; flex: none; }
+  .ic svg { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .mono { font-family: var(--font-mono); direction: ltr; unicode-bidi: isolate; }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* top bar + tabs */
+  .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 15; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 20px; text-decoration: none; }
+  .brand b { color: var(--accent); }
+  .mark { width: 34px; height: 34px; background: var(--accent); border-radius: 10px; display: grid; place-items: center; box-shadow: 0 0 24px var(--glow); }
+  .mark svg { width: 16px; height: 16px; fill: var(--accent-ink); }
+  nav.tabs { display: flex; gap: 4px; }
+  nav.tabs a { display: flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; padding: 7px 14px; border-radius: 12px; white-space: nowrap; transition: color .15s, background .15s; }
+  nav.tabs a:hover { color: var(--fg); background: var(--surface); }
+  nav.tabs a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+  @media (max-width: 720px) {
+    body { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+    nav.tabs { position: fixed; inset: auto 0 0 0; z-index: 25; background: var(--bg); border-top: 1px solid var(--line); justify-content: space-around; gap: 0;
+      padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); }
+    nav.tabs a { flex: 1; flex-direction: column; gap: 1px; font-size: 11px; padding: 5px 4px; justify-content: center; }
+    nav.tabs a .ic svg { width: 22px; height: 22px; }
+  }
+
+  main { padding-top: 20px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  h1 { margin: 0; font-size: clamp(24px, 5vw, 34px); font-weight: 900; line-height: 1.2; text-wrap: balance; }
+  h1 span { color: var(--accent); }
+  h2 { margin: 0; font-size: 19px; font-weight: 800; }
+  .sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .count { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+
+  /* buttons + fields */
+  .btn { background: var(--accent); color: var(--accent-ink); font-weight: 800; border: 0; border-radius: 12px; padding: 9px 22px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: background .15s, transform .1s; }
+  .btn:hover { background: var(--accent-hi); }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .ghost { font-size: 13px; font-weight: 600; border-radius: 10px; padding: 4px 14px; background: transparent; border: 1px solid var(--line); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .ghost.del:hover { border-color: var(--danger); color: var(--danger); }
+  .ghost.confirm { border-color: var(--danger); background: var(--danger); color: #1a0000; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  input[type=text], input[type=search], textarea, select { font: inherit; color: var(--fg); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; width: 100%; }
+  select { width: auto; }
+  textarea { min-height: 84px; resize: vertical; }
+  label.f { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .note { border-radius: 12px; padding: 12px 16px; font-size: 14px; border: 1px solid #4a3526; background: var(--surface); color: #ffd3b3; }
+  .panel { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .empty { border: 1px dashed #3b2f26; border-radius: 20px; background: radial-gradient(circle at 50% 0, var(--glow), transparent 70%), var(--surface); padding: 48px 20px; text-align: center; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .empty b { color: var(--fg); font-size: 18px; }
+  .toast { position: fixed; inset-inline: 16px; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); margin: 0 auto; width: fit-content; max-width: 420px; background: var(--accent); color: var(--accent-ink); font-weight: 700; border-radius: 12px; padding: 10px 18px; text-align: center; z-index: 80; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+
+  /* toolbar */
+  .tb { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .search { position: relative; flex: 1 1 260px; display: block; }
+  .search .ic { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .search input { padding-inline-start: 38px; border-radius: 99px; background: var(--surface); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { background: var(--surface); border: 1px solid var(--line); color: var(--muted); border-radius: 99px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
+  .chip:hover { color: var(--fg); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  /* thumbnails + cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 22px 18px; }
+  .vc { display: flex; flex-direction: column; gap: 10px; min-width: 0; cursor: pointer; border-radius: 14px; }
+  .vc:hover .thumb { border-color: var(--accent); }
+  .vc:hover .play { opacity: 1; transform: scale(1); }
+  .thumb { position: relative; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--line); transition: border-color .15s; }
+  .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .dur { position: absolute; inset-inline-end: 8px; bottom: 8px; background: rgba(0,0,0,.78); border-radius: 6px; padding: 0 7px; font-size: 12px; }
+  .thumb .kp { position: absolute; inset-inline-start: 8px; top: 8px; background: var(--accent); color: var(--accent-ink); border-radius: 6px; padding: 0 8px; font-size: 11px; font-weight: 800; }
+  .play { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transform: scale(.9); transition: opacity .15s, transform .15s; background: rgba(0,0,0,.25); }
+  .play span { width: 46px; height: 46px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+  .play svg { fill: var(--accent-ink); stroke: none; width: 20px; height: 20px; }
+  .vc h3 { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .meta { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12px; color: var(--muted); align-items: center; }
+  .stat { display: inline-flex; align-items: center; gap: 4px; }
+  .stat .ic svg { width: 14px; height: 14px; }
+  .who { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); text-decoration: none; font-size: 13px; font-weight: 600; }
+  .who img { width: 22px; height: 22px; border-radius: 50%; }
+  .who:hover { color: var(--accent); }
+  .sk { border-radius: 14px; aspect-ratio: 16 / 12; background: linear-gradient(100deg, var(--surface) 30%, var(--surface-2) 50%, var(--surface) 70%); background-size: 300% 100%; animation: shimmer 1.4s linear infinite; }
+  @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+  /* hero */
+  .hero { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); cursor: pointer; background: var(--surface); display: block; text-align: start; width: 100%; padding: 0; }
+  .hero .thumb { aspect-ratio: 21 / 9; border: 0; border-radius: 0; }
+  .hero .cover { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(10,9,8,.96) 5%, rgba(10,9,8,.2) 65%), radial-gradient(circle at 100% 0, var(--glow), transparent 55%); display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding: clamp(14px, 3vw, 28px); }
+  .hero h2 { font-size: clamp(20px, 4vw, 34px); font-weight: 900; line-height: 1.3; text-wrap: balance; overflow-wrap: anywhere; }
+  .hero p { margin: 0; color: #d8cec4; max-width: 60ch; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hero .btn { align-self: flex-start; pointer-events: none; }
+  .hero:hover { border-color: var(--accent); }
+  @media (max-width: 600px) { .hero .thumb { aspect-ratio: 4 / 3; } }
+
+  /* social */
+  .soc { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .sbtn { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; background: var(--surface-2); border: 1px solid var(--line); border-radius: 99px; padding: 5px 16px; transition: border-color .15s, color .15s; }
+  .sbtn:hover { border-color: var(--accent); }
+  .sbtn.on { color: var(--accent); border-color: var(--accent); }
+  .sbtn.on .ic svg { fill: var(--accent); }
+  .desc { font-size: 14px; color: #d3c9bf; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+  .desc.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .more { background: none; border: 0; color: var(--accent); font-size: 13px; padding: 0; font-weight: 700; align-self: flex-start; }
+  .cbox { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .clist { display: flex; flex-direction: column; gap: 12px; }
+  .cm { display: flex; gap: 10px; font-size: 14px; align-items: flex-start; }
+  .cm img { width: 30px; height: 30px; border-radius: 50%; flex: none; }
+  .cm .tx { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+  .cm b { font-weight: 700; }
+  .cm .dt { color: var(--muted); font-size: 11px; margin-inline-start: 8px; }
+  .cm .x { background: none; border: 0; color: var(--muted); font-size: 12px; padding: 0 4px; }
+  .cm .x:hover { color: var(--danger); }
+  .cform { display: flex; gap: 8px; }
+  .cform input { flex: 1; min-width: 0; }
+
+  /* shorts */
+  .feed { --h: calc(100dvh - 170px); height: var(--h); min-height: 440px; overflow-y: scroll; scroll-snap-type: y mandatory; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none; overscroll-behavior: contain; }
+  .feed::-webkit-scrollbar { display: none; }
+  @media (max-width: 720px) { .feed { --h: calc(100dvh - 150px - env(safe-area-inset-bottom, 0px)); } }
+  .short { scroll-snap-align: center; scroll-snap-stop: always; flex: none; height: 100%; aspect-ratio: 9 / 16; max-width: 100%; margin: 0 auto; position: relative; background: #000; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); user-select: none; -webkit-user-select: none; }
+  .short video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .short .cap { position: absolute; inset: auto 0 0 0; padding: 60px 16px 18px; padding-inline-end: 84px; background: linear-gradient(transparent, rgba(0,0,0,.88)); display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+  .short .cap h3 { margin: 0; font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
+  .short .cap .desc { color: #e6ddd3; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .short .cap .who { pointer-events: auto; align-self: flex-start; }
+  .rail { position: absolute; inset-inline-end: 10px; bottom: 18px; display: flex; flex-direction: column; gap: 12px; align-items: center; z-index: 2; }
+  .rail .sbtn { flex-direction: column; gap: 2px; border-radius: 18px; padding: 9px 8px; background: rgba(0,0,0,.55); border-color: rgba(255,255,255,.12); min-width: 56px; justify-content: center; font-size: 12px; }
+  .rail .sbtn .ic svg { width: 26px; height: 26px; }
+  .short .snd { position: absolute; top: 12px; inset-inline-start: 12px; z-index: 2; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.12); border-radius: 99px; width: 40px; height: 40px; display: grid; place-items: center; }
+  .short .pos { position: absolute; top: 18px; left: 14px; z-index: 2; font-size: 12px; background: rgba(0,0,0,.55); border-radius: 99px; padding: 0 10px; }
+  .pbar { position: absolute; inset: auto 0 0 0; height: 3px; background: rgba(255,255,255,.18); z-index: 3; }
+  .pbar i { display: block; height: 100%; width: 0; background: var(--accent); margin-inline-start: auto; }
+  .ind { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 1; }
+  .ind span { width: 74px; height: 74px; border-radius: 50%; background: rgba(0,0,0,.55); display: grid; place-items: center; }
+  .ind svg { width: 30px; height: 30px; fill: #fff; stroke: none; }
+  .short.ps .ind { opacity: 1; }
+  .burst { position: absolute; z-index: 4; pointer-events: none; width: 90px; height: 90px; margin: -45px 0 0 -45px; color: var(--accent); animation: burst .75s ease-out forwards; }
+  .burst svg { width: 100%; height: 100%; fill: var(--accent); stroke: none; }
+  @keyframes burst { 0% { transform: scale(.3); opacity: 1; } 35% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1.5) translateY(-30px); opacity: 0; } }
+  .sheet { position: absolute; inset: auto 0 0 0; height: 68%; background: var(--surface); border-top: 1px solid var(--line); border-radius: 20px 20px 0 0; padding: 14px; display: flex; flex-direction: column; gap: 10px; z-index: 6; }
+  .sheet .clist { flex: 1; overflow-y: auto; min-height: 60px; }
+  .sheet .top2 { display: flex; justify-content: space-between; align-items: center; }
+  .keys { font-size: 12px; color: var(--muted); text-align: center; }
+  @media (hover: none) { .keys { display: none; } }
+
+  /* upload */
+  .drop { position: relative; border: 2px dashed #4a3526; border-radius: 22px; background: radial-gradient(circle at 50% 0, var(--glow), transparent 70%), var(--surface); padding: clamp(30px, 6vw, 56px) 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; cursor: pointer; transition: border-color .2s, transform .2s; }
+  .drop:hover, .drop.over { border-color: var(--accent); }
+  .drop.over { transform: scale(1.01); }
+  .drop:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop .btn { pointer-events: none; }
+  .drop p { margin: 0; color: var(--muted); font-size: 14px; }
+  .up-icon { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; color: var(--accent); }
+  .up-icon svg { width: 28px; height: 28px; }
+  .queue { display: flex; flex-direction: column; gap: 12px; }
+  .q { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: start; }
+  .q .pv { aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: var(--surface-2); display: grid; place-items: center; color: var(--muted); font-size: 12px; }
+  .q .pv img { width: 100%; height: 100%; object-fit: cover; }
+  .q .fields { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .q .two { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .q .s { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  .q .s.err { color: #ffb1b1; }
+  .q .s.ok { color: var(--accent); font-weight: 700; }
+  .q .t { font-weight: 700; overflow-wrap: anywhere; }
+  .prog { height: 4px; background: var(--surface-2); border-radius: 9px; overflow: hidden; position: relative; }
+  .prog::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 38%; background: var(--accent); animation: slide 1.1s ease-in-out infinite alternate; }
+  @keyframes slide { from { transform: translateX(-10%); } to { transform: translateX(160%); } }
+  @media (max-width: 520px) { .q { grid-template-columns: 1fr; } .q .pv { aspect-ratio: 16 / 9; } }
+
+  /* profile + account */
+  .me { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .me img { width: 76px; height: 76px; border-radius: 50%; border: 2px solid var(--accent); }
+  .me .n { font-size: 24px; font-weight: 900; }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stats div { background: var(--surface-2); border-radius: 12px; padding: 6px 16px; font-size: 13px; color: var(--muted); }
+  .stats b { color: var(--fg); font-size: 17px; margin-inline-end: 6px; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; font-size: 14px; margin: 0; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .on { color: var(--accent); font-weight: 700; }
+  .own { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .edit { display: flex; flex-direction: column; gap: 8px; background: var(--surface); border: 1px solid var(--accent); border-radius: 14px; padding: 12px; }
+
+  /* player overlay */
+  #overlay { position: fixed; inset: 0; z-index: 40; background: #060504; overflow-y: auto; overscroll-behavior: contain;
+    padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); padding-block: calc(10px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .pl { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 8px 26px; align-items: start; }
+  .pl > .bar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .pclose { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
+  .pclose:hover { border-color: var(--accent); color: var(--accent); }
+  .pmain { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .pmain video { width: 100%; max-height: 74vh; background: #000; border-radius: 18px; aspect-ratio: 16 / 9; display: block; object-fit: contain; }
+  .pmain video.portrait { aspect-ratio: 9 / 16; max-width: min(100%, 420px); margin: 0 auto; max-height: 78vh; }
+  .pmain h1 { font-size: clamp(20px, 3.4vw, 28px); overflow-wrap: anywhere; }
+  .speed { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted); }
+  .descbox { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .mini { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 10px; cursor: pointer; align-items: start; }
+  .mini .thumb { border-radius: 10px; }
+  .mini h3 { font-size: 14px; margin: 0 0 2px; }
+  @media (max-width: 900px) { .pl { grid-template-columns: minmax(0, 1fr); } }
+
+  @media (prefers-reduced-motion: reduce) { .sk, .prog::after, .burst { animation: none; } .drop, .vc *, .btn { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#watch"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg></span>جعبه&nbsp;<b>ویدیو</b></a>
+    <nav class="tabs" id="nav" aria-label="صفحات"></nav>
+  </header>
+  <main id="main"></main>
+</div>
+<div id="overlay" role="dialog" aria-modal="true" aria-label="پخش ویدیو" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  var MAX = 20 * 1024 * 1024;
+  var PAGES = [["watch", "تماشا"], ["shorts", "شورت"], ["upload", "آپلود"], ["profile", "پروفایل"], ["account", "اکانت"]];
+  var ICON = {
+    watch: '<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/>',
+    shorts: '<path d="M13 3 5 13h6l-1 8 8-10h-6z"/>',
+    upload: '<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/>',
+    profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>',
+    account: '<rect x="4" y="10" width="16" height="10" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    heart: '<path d="M12 21l-1.5-1.3C5.4 15.1 2 12.1 2 8.5 2 5.5 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.5 22 8.5c0 3.6-3.4 6.6-8.5 11.2L12 21Z"/>',
+    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>',
+    share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4M8.6 13.4l6.8 4"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    vol: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/>',
+    mute: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="m17 9 4 6M21 9l-4 6"/>',
+    eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+    trash: '<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
+    play: '<path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/>',
+    pause: '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>',
+    up: '<path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>'
+  };
+  var S = {
+    videos: [], byId: {}, profiles: {}, names: {}, avatars: {}, likes: {}, views: {}, comments: {},
+    me: { id: null, name: "", avatarUrl: "", canEdit: false, isOwner: false },
+    assets: null, userCap: null, col: null, pcol: null, lcol: null, ccol: null, vcol: null,
+    vraw: {}, likeDocs: {}, viewDocs: {}, cmtDocs: {},
+    loaded: false, dbOn: false, canWrite: null, usage: null,
+    q: "", sort: "new", kind: "all", viewing: null, queue: [], confirmId: null, editId: null, muted: true, openId: null
+  };
+  var fa = new Intl.NumberFormat("fa-IR");
+  var rtf = null; try { rtf = new Intl.RelativeTimeFormat("fa", { numeric: "auto" }); } catch (e) {}
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function ic(name) { var s = el("span", "ic"); s.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[name] + "</svg>"; return s; }
+  function btn(cls, text, fn) { var b = el("button", cls, text); b.type = "button"; if (fn) b.addEventListener("click", fn); return b; }
+  function fmtSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+  function fmtDur(s) { s = Math.max(0, Math.round(s || 0)); var m = Math.floor(s / 60), r = s % 60; return fa.format(m) + ":" + (r < 10 ? "۰" : "") + fa.format(r); }
+  function ago(iso) {
+    if (!iso || !rtf) return "";
+    var s = (new Date(iso).getTime() - Date.now()) / 1000, a = Math.abs(s);
+    var u = [["year", 31536000], ["month", 2592000], ["day", 86400], ["hour", 3600], ["minute", 60]];
+    for (var i = 0; i < u.length; i++) if (a >= u[i][1]) return rtf.format(Math.round(s / u[i][1]), u[i][0]);
+    return "همین حالا";
+  }
+  function page() { var h = (location.hash || "").slice(1); return PAGES.some(function (p) { return p[0] === h; }) ? h : "watch"; }
+  function nameOf(id) { return (S.profiles[id] && S.profiles[id].name) || S.names[id] || (id && id === S.me.id && S.me.name) || "کاربر"; }
+  function avatarOf(id) { return id && id === S.me.id ? S.me.avatarUrl : S.avatars[id] || ""; }
+  /* ---------- input hygiene: everything read from the shared store is untrusted ---------- */
+  var RX_ID = /^[0-9a-f]{32}$/, RX_LID = /^[0-9a-f]{16}$/, RX_UID = /^u_[A-Za-z0-9_-]{4,40}$/, RX_KEY = /^u_[A-Za-z0-9_-]{4,40}\.[0-9a-f]{16}$/;
+  var MAXV = 80, MAXC = 120, MAXL = 3000, MAXW = 2000;
+  function sane(x, max, multi) {
+    x = String(x == null ? "" : x).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f​‪-‮⁦-⁩﻿]/g, "");
+    x = multi ? x.replace(/\r\n?/g, "\n").replace(/\n{3,}/g, "\n\n") : x.replace(/\s+/g, " ");
+    return x.trim().slice(0, max);
+  }
+  function num(x, lo, hi) { x = Number(x); return isFinite(x) ? Math.min(hi, Math.max(lo, x)) : lo; }
+  function cleanDate(x) { var t = Date.parse(x); return isFinite(t) ? new Date(t).toISOString() : ""; }
+  function okAvatar(u) { return typeof u === "string" && /^(data:image\/(png|jpeg|gif|webp|svg\+xml)[;,]|\/[^\/]|https:\/\/)/.test(u); }
+  function rid() {
+    var a = new Uint8Array(8);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else for (var i = 0; i < 8; i++) a[i] = Math.floor(Math.random() * 256);
+    return Array.prototype.map.call(a, function (b) { return (b < 16 ? "0" : "") + b.toString(16); }).join("");
+  }
+  function keyList(arr, cap) { return Array.isArray(arr) ? arr.filter(function (k) { return typeof k === "string" && RX_KEY.test(k); }).slice(-cap) : []; }
+  function parseKeyDocs(snap, cap) {
+    var o = {}; snap.docs.forEach(function (d) { if (RX_UID.test(d.id)) o[d.id] = keyList((d.data() || {}).ids, cap); }); return o;
+  }
+  function rebuildMap(docs, target) {
+    var o = {}; Object.keys(docs).forEach(function (uid) { docs[uid].forEach(function (k) { (o[k] = o[k] || new Set()).add(uid); }); }); S[target] = o;
+  }
+  function rebuildComments() {
+    var o = {};
+    Object.keys(S.cmtDocs).forEach(function (uid) { S.cmtDocs[uid].forEach(function (c) { (o[c.videoId] = o[c.videoId] || []).push({ id: c.id, userId: uid, text: c.text, createdAt: c.createdAt }); }); });
+    Object.keys(o).forEach(function (k) { o[k].sort(function (a, b) { return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0; }); });
+    S.comments = o;
+  }
+  function parseCmt(snap) {
+    var o = {};
+    snap.docs.forEach(function (d) {
+      if (!RX_UID.test(d.id)) return;
+      var items = Array.isArray((d.data() || {}).items) ? d.data().items.slice(-MAXC) : [];
+      o[d.id] = items.filter(function (c) { return c && typeof c.id === "string" && RX_LID.test(c.id) && typeof c.videoId === "string" && RX_KEY.test(c.videoId) && typeof c.text === "string"; })
+        .map(function (c) { return { id: c.id, videoId: c.videoId, text: sane(c.text, 300), createdAt: cleanDate(c.createdAt) }; }).filter(function (c) { return c.text; });
+    });
+    S.cmtDocs = o; rebuildComments();
+  }
+  function parseVideos(snap) {
+    var all = [], raw = {};
+    snap.docs.forEach(function (d) {
+      if (!RX_UID.test(d.id)) return;
+      var items = Array.isArray((d.data() || {}).items) ? d.data().items.slice(0, MAXV) : [], keep = [];
+      items.forEach(function (r) {
+        if (!r || typeof r !== "object" || typeof r.id !== "string" || !RX_LID.test(r.id) || typeof r.assetId !== "string" || !RX_ID.test(r.assetId)) return;
+        var rec = { id: r.id, assetId: r.assetId, thumbId: typeof r.thumbId === "string" && RX_ID.test(r.thumbId) ? r.thumbId : "", title: sane(r.title, 120) || "بدون نام",
+          description: sane(r.description, 800, true), size: num(r.size, 0, 1e10), dur: Math.round(num(r.dur, 0, 86400)), kind: r.kind === "short" ? "short" : "video", createdAt: cleanDate(r.createdAt) };
+        keep.push(rec);
+        all.push({ id: d.id + "." + rec.id, lid: rec.id, ownerId: d.id, assetId: rec.assetId, thumbId: rec.thumbId, title: rec.title, desc: rec.description, size: rec.size, dur: rec.dur, kind: rec.kind, createdAt: rec.createdAt, url: "/_blob/" + rec.assetId });
+      });
+      raw[d.id] = keep;
+    });
+    all.sort(function (a, b) { return a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0; });
+    S.vraw = raw; S.videos = all; S.byId = {}; all.forEach(function (v) { S.byId[v.id] = v; });
+  }
+  function saveMine(items) {
+    var prev = S.vraw[S.me.id]; S.vraw[S.me.id] = items;
+    return S.col.doc(S.me.id).set({ items: items }).catch(function (e) { S.vraw[S.me.id] = prev; throw e; });
+  }
+  var toastT = null;
+  function toast(msg) {
+    var old = $("#toast"); if (old) old.remove();
+    var t = el("div", "toast", msg); t.id = "toast"; document.body.appendChild(t);
+    clearTimeout(toastT); toastT = setTimeout(function () { t.remove(); }, 2800);
+  }
+
+  /* ---------- social data helpers ---------- */
+  function nLikes(id) { return S.likes[id] ? S.likes[id].size : 0; }
+  function nViews(id) { return S.views[id] ? S.views[id].size : 0; }
+  function nComments(id) { return (S.comments[id] || []).length; }
+  function isLiked(id) { return !!(S.me.id && S.likes[id] && S.likes[id].has(S.me.id)); }
+  function stat(kind, id) {
+    var s = el("span", "stat"); s.dataset.st = kind + ":" + id;
+    s.appendChild(ic(kind === "l" ? "heart" : kind === "v" ? "eye" : "chat")); s.appendChild(el("span", "n"));
+    return s;
+  }
+  function setStat(s) {
+    var p = s.dataset.st.split(":"), id = p[1];
+    s.querySelector(".n").textContent = fa.format(p[0] === "l" ? nLikes(id) : p[0] === "v" ? nViews(id) : nComments(id));
+  }
+  function setLikeBtn(b) {
+    var on = isLiked(b.dataset.like);
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.querySelector(".n").textContent = fa.format(nLikes(b.dataset.like));
+  }
+  function likeBtn(v) {
+    var b = btn("sbtn"); b.dataset.like = v.id; b.setAttribute("aria-label", "لایک");
+    b.appendChild(ic("heart")); b.appendChild(el("span", "n"));
+    b.addEventListener("click", function (e) { e.stopPropagation(); toggleLike(v); });
+    setLikeBtn(b); return b;
+  }
+  var likeBusy = false;
+  async function toggleLike(v) {
+    if (!S.me.id || !S.lcol) { toast("برای لایک کردن باید وارد حسابت بشی."); return; }
+    if (likeBusy) return; likeBusy = true; setTimeout(function () { likeBusy = false; }, 350);
+    var cur = S.likeDocs[S.me.id] || [], has = cur.indexOf(v.id) >= 0;
+    var next = has ? cur.filter(function (k) { return k !== v.id; }) : cur.concat(v.id).slice(-MAXL);
+    S.likeDocs[S.me.id] = next; rebuildMap(S.likeDocs, "likes"); refreshSocial();
+    try { await S.lcol.doc(S.me.id).set({ ids: next }); }
+    catch (e) { S.likeDocs[S.me.id] = cur; rebuildMap(S.likeDocs, "likes"); refreshSocial(); toast("لایک ثبت نشد. دوباره امتحان کن."); }
+  }
+  var lastCmt = 0;
+  async function postComment(v, raw) {
+    var t = sane(raw, 300); if (!t) return false;
+    if (!S.me.id || !S.ccol) { toast("برای کامنت گذاشتن باید وارد حسابت بشی."); return false; }
+    if (Date.now() - lastCmt < 4000) { toast("چند ثانیه صبر کن و دوباره بفرست."); return false; }
+    var cur = S.cmtDocs[S.me.id] || [];
+    var next = cur.concat({ id: rid(), videoId: v.id, text: t, createdAt: new Date().toISOString() }).slice(-MAXC);
+    lastCmt = Date.now(); S.cmtDocs[S.me.id] = next; rebuildComments(); refreshSocial();
+    try { await S.ccol.doc(S.me.id).set({ items: next }); return true; }
+    catch (e) { S.cmtDocs[S.me.id] = cur; rebuildComments(); refreshSocial(); toast("کامنت ارسال نشد."); return false; }
+  }
+  async function delComment(c) {
+    if (c.userId !== S.me.id || !S.ccol) return;
+    var cur = S.cmtDocs[S.me.id] || [], next = cur.filter(function (x) { return x.id !== c.id; });
+    S.cmtDocs[S.me.id] = next; rebuildComments(); refreshSocial();
+    try { await S.ccol.doc(S.me.id).set({ items: next }); } catch (e) { S.cmtDocs[S.me.id] = cur; rebuildComments(); refreshSocial(); toast("حذف نشد."); }
+  }
+  function cmtBtn(v, fn) {
+    var b = btn("sbtn", null, function (e) { e.stopPropagation(); fn(); }); b.setAttribute("aria-label", "کامنت‌ها");
+    b.dataset.cc = v.id; b.appendChild(ic("chat")); b.appendChild(el("span", "n"));
+    b.querySelector(".n").textContent = fa.format(nComments(v.id)); return b;
+  }
+  function shareBtn(v) {
+    var b = btn("sbtn", null, async function (e) {
+      e.stopPropagation();
+      var url = location.href.split("#")[0];
+      try { await navigator.clipboard.writeText(v.title + "\n" + url); toast("لینک سایت کپی شد."); }
+      catch (er) { toast("کپی نشد. آدرس صفحه رو دستی کپی کن."); }
+    });
+    b.setAttribute("aria-label", "اشتراک‌گذاری"); b.appendChild(ic("share")); b.appendChild(el("span", "n", "اشتراک"));
+    return b;
+  }
+  function fillComments(list) {
+    var id = list.dataset.clist; list.textContent = "";
+    var arr = S.comments[id] || [];
+    if (!arr.length) { list.appendChild(el("div", "sub", "هنوز کامنتی نیست. اولین نفر باش.")); return; }
+    arr.forEach(function (c) {
+      var r = el("div", "cm"), src = avatarOf(c.userId);
+      if (src) { var im = document.createElement("img"); im.src = src; im.alt = ""; r.appendChild(im); }
+      var tx = el("div", "tx"); tx.appendChild(el("b", null, nameOf(c.userId)));
+      if (c.createdAt) tx.appendChild(el("span", "dt", ago(c.createdAt)));
+      tx.appendChild(el("div", null, c.text)); r.appendChild(tx);
+      if (c.userId && c.userId === S.me.id) r.appendChild(btn("x", "حذف", function () { delComment(c); }));
+      list.appendChild(r);
+    });
+  }
+  function refreshSocial() {
+    document.querySelectorAll("[data-like]").forEach(setLikeBtn);
+    document.querySelectorAll("[data-st]").forEach(setStat);
+    document.querySelectorAll("[data-cc]").forEach(function (b) { b.querySelector(".n").textContent = fa.format(nComments(b.dataset.cc)); });
+    document.querySelectorAll("[data-clist]").forEach(fillComments);
+  }
+  function commentsBox(v) {
+    var box = el("div", "cbox");
+    var list = el("div", "clist"); list.dataset.clist = v.id; fillComments(list); box.appendChild(list);
+    if (S.me.id && S.ccol) {
+      var f = el("form", "cform"), i = document.createElement("input");
+      i.type = "text"; i.maxLength = 300; i.placeholder = "کامنتت رو بنویس…"; i.id = "cin-" + v.id + "-" + Math.random().toString(36).slice(2, 6); i.setAttribute("aria-label", "کامنت");
+      var s = el("button", "btn", "ارسال"); s.type = "submit"; f.appendChild(i); f.appendChild(s);
+      f.addEventListener("submit", async function (e) {
+        e.preventDefault(); s.disabled = true;
+        if (await postComment(v, i.value)) i.value = "";
+        s.disabled = false;
+      });
+      f.addEventListener("keydown", function (e) { e.stopPropagation(); });
+      box.appendChild(f);
+    } else box.appendChild(el("div", "sub", "برای کامنت گذاشتن باید وارد حسابت بشی."));
+    return box;
+  }
+  async function resolveNames() {
+    if (!S.userCap || !S.userCap.profiles) return;
+    var ids = {};
+    S.videos.forEach(function (v) { if (v.ownerId) ids[v.ownerId] = 1; });
+    Object.keys(S.comments).forEach(function (k) { S.comments[k].forEach(function (c) { if (c.userId) ids[c.userId] = 1; }); });
+    ids = Object.keys(ids); if (!ids.length) return;
+    try { var ps = await S.userCap.profiles(ids); ids.forEach(function (i) { if (ps[i]) { S.names[i] = sane(ps[i].name, 60); S.avatars[i] = okAvatar(ps[i].avatarUrl) ? ps[i].avatarUrl : ""; } }); } catch (e) {}
+  }
+  function recordView(v) {
+    if (!v || !S.me.id || !S.vcol) return;
+    var cur = S.viewDocs[S.me.id] || []; if (cur.indexOf(v.id) >= 0) return;
+    var next = cur.concat(v.id).slice(-MAXW); S.viewDocs[S.me.id] = next; rebuildMap(S.viewDocs, "views");
+    S.vcol.doc(S.me.id).set({ ids: next }).catch(function () {});
+  }
+
+  /* ---------- shared building blocks ---------- */
+  function whoLink(id) {
+    var a = el("a", "who"); a.href = "#profile";
+    var src = avatarOf(id); if (src) { var im = document.createElement("img"); im.src = src; im.alt = ""; a.appendChild(im); }
+    a.appendChild(document.createTextNode(nameOf(id)));
+    a.addEventListener("click", function (e) { e.stopPropagation(); S.viewing = id; closePlayer(); });
+    return a;
+  }
+  function thumb(v) {
+    var d = el("div", "thumb");
+    if (v.thumbId) { var im = document.createElement("img"); im.src = "/_blob/" + v.thumbId; im.alt = ""; im.loading = "lazy"; d.appendChild(im); }
+    else { var vv = document.createElement("video"); vv.src = v.url + "#t=0.5"; vv.preload = "metadata"; vv.muted = true; vv.playsInline = true; d.appendChild(vv); }
+    if (v.dur) d.appendChild(el("span", "dur mono", fmtDur(v.dur)));
+    if (v.kind === "short") d.appendChild(el("span", "kp", "شورت"));
+    var p = el("div", "play"), s = el("span"); s.appendChild(ic("play")); p.appendChild(s); d.appendChild(p);
+    return d;
+  }
+  function metaRow(v) {
+    var m = el("div", "meta");
+    if (v.ownerId) m.appendChild(whoLink(v.ownerId));
+    m.appendChild(stat("v", v.id)); m.appendChild(stat("l", v.id));
+    if (v.createdAt) m.appendChild(el("span", null, ago(v.createdAt)));
+    return m;
+  }
+  function card(v, own) {
+    var c = el("article", "vc"); c.tabIndex = 0; c.setAttribute("role", "button"); c.setAttribute("aria-label", v.title);
+    c.addEventListener("click", function () { openPlayer(v.id); });
+    c.addEventListener("keydown", function (e) { if (e.target === c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openPlayer(v.id); } });
+    c.appendChild(thumb(v)); c.appendChild(el("h3", null, v.title)); c.appendChild(metaRow(v));
+    if (own) {
+      var a = el("div", "actions");
+      a.addEventListener("click", function (e) { e.stopPropagation(); });
+      var eb = btn("ghost", null, function () { S.editId = v.id; render(); }); eb.appendChild(ic("edit")); eb.appendChild(document.createTextNode("ویرایش")); a.appendChild(eb);
+      var d = btn("ghost del", null, function () { delVideo(v); }); d.appendChild(ic("trash")); d.appendChild(document.createTextNode(S.confirmId === v.id ? "مطمئنی؟ حذف شود" : "حذف"));
+      if (S.confirmId === v.id) d.className = "ghost confirm";
+      a.appendChild(d); c.appendChild(a);
+    }
+    return c;
+  }
+  async function delVideo(v) {
+    if (v.ownerId !== S.me.id || !S.col) return;
+    if (S.confirmId !== v.id) { S.confirmId = v.id; render(); setTimeout(function () { if (S.confirmId === v.id) { S.confirmId = null; render(); } }, 4000); return; }
+    S.confirmId = null;
+    try {
+      await saveMine((S.vraw[S.me.id] || []).filter(function (r) { return r.id !== v.lid; }));
+      toast("ویدیو حذف شد.");
+      if (S.assets) { try { await S.assets.delete(v.assetId); if (v.thumbId) await S.assets.delete(v.thumbId); } catch (e) {} }
+    } catch (e) { toast("حذف انجام نشد."); }
+    render();
+  }
+  function editForm(v) {
+    var f = el("form", "edit");
+    var t = document.createElement("input"); t.type = "text"; t.id = "et-" + v.id; t.value = v.title; t.maxLength = 120; t.setAttribute("aria-label", "عنوان");
+    var d = document.createElement("textarea"); d.id = "ed-" + v.id; d.value = v.desc; d.maxLength = 800; d.setAttribute("aria-label", "توضیحات"); d.placeholder = "توضیحات";
+    var k = document.createElement("select"); k.id = "ek-" + v.id; k.setAttribute("aria-label", "نوع");
+    [["video", "ویدیو"], ["short", "شورت"]].forEach(function (o) { var op = el("option", null, o[1]); op.value = o[0]; if (v.kind === o[0]) op.selected = true; k.appendChild(op); });
+    var a = el("div", "actions"), sv = el("button", "btn", "ذخیره"); sv.type = "submit";
+    a.appendChild(sv); a.appendChild(btn("ghost", "انصراف", function () { S.editId = null; render(); }));
+    f.appendChild(t); f.appendChild(d); f.appendChild(k); f.appendChild(a);
+    f.addEventListener("submit", async function (e) {
+      e.preventDefault(); sv.disabled = true;
+      if (v.ownerId !== S.me.id) return;
+      try {
+        await saveMine((S.vraw[S.me.id] || []).map(function (r) { return r.id === v.lid ? Object.assign({}, r, { title: sane(t.value, 120) || "بدون نام", description: sane(d.value, 800, true), kind: k.value === "short" ? "short" : "video" }) : r; }));
+        S.editId = null; toast("ذخیره شد.");
+      } catch (er) { toast("ذخیره نشد."); sv.disabled = false; return; }
+      render();
+    });
+    return f;
+  }
+  function emptyBox(t, s, cta) {
+    var e = el("div", "empty"); e.appendChild(el("b", null, t)); e.appendChild(el("span", null, s));
+    if (cta) { var a = el("a", "btn", cta[0]); a.href = cta[1]; e.appendChild(a); }
+    return e;
+  }
+  function skeleton(n) { var g = el("div", "grid"); for (var i = 0; i < n; i++) g.appendChild(el("div", "sk")); return g; }
+
+  /* ---------- player overlay ---------- */
+  var lastFocus = null;
+  function descBlock(v, wrapCls) {
+    var box = el("div", wrapCls || "descbox");
+    var d = el("p", "desc clamp", v.desc || "توضیحاتی برای این ویدیو نوشته نشده."); box.appendChild(d);
+    if (v.desc && (v.desc.length > 140 || v.desc.indexOf("\n") >= 0)) {
+      box.appendChild(btn("more", "بیشتر", function (e) { var cl = d.classList.toggle("clamp"); e.currentTarget.textContent = cl ? "بیشتر" : "کمتر"; }));
+    }
+    return box;
+  }
+  function openPlayer(id) {
+    var v = S.byId[id]; if (!v) return;
+    lastFocus = document.activeElement; S.openId = id; recordView(v);
+    var ov = $("#overlay"); ov.textContent = ""; ov.hidden = false; ov.scrollTop = 0; document.body.classList.add("lock");
+    var pl = el("div", "pl"), bar = el("div", "bar");
+    bar.appendChild(el("span", "count", v.kind === "short" ? "شورت" : "ویدیو"));
+    var cl = btn("pclose", null, closePlayer); cl.setAttribute("aria-label", "بستن"); cl.appendChild(ic("x")); bar.appendChild(cl); pl.appendChild(bar);
+
+    var main = el("div", "pmain");
+    var vid = document.createElement("video"); vid.controls = true; vid.autoplay = true; vid.playsInline = true; vid.src = v.url;
+    if (v.thumbId) vid.poster = "/_blob/" + v.thumbId;
+    if (v.kind === "short") vid.className = "portrait";
+    main.appendChild(vid);
+    var sp = el("div", "speed"); sp.appendChild(el("span", null, "سرعت"));
+    [0.5, 1, 1.5, 2].forEach(function (r) {
+      var b = btn("chip", r === 1 ? "عادی" : fa.format(r) + "×", function () { vid.playbackRate = r; sp.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); }); });
+      b.setAttribute("aria-pressed", r === 1 ? "true" : "false"); sp.appendChild(b);
+    });
+    main.appendChild(sp);
+    main.appendChild(el("h1", null, v.title));
+    main.appendChild(metaRow(v));
+    var soc = el("div", "soc"); soc.appendChild(likeBtn(v)); soc.appendChild(shareBtn(v));
+    soc.appendChild(cmtBtn(v, function () { var c = $("#pc"); if (c) c.scrollIntoView({ behavior: "smooth", block: "start" }); }));
+    main.appendChild(soc); main.appendChild(descBlock(v));
+    var ch = el("h2", null, "کامنت‌ها"); ch.id = "pc"; main.appendChild(ch); main.appendChild(commentsBox(v));
+    pl.appendChild(main);
+
+    var side = el("div", "side"); side.appendChild(el("h2", null, "بعدی"));
+    var others = S.videos.filter(function (x) { return x.id !== id; }).slice(0, 8);
+    if (!others.length) side.appendChild(el("div", "sub", "ویدیوی دیگه‌ای نیست."));
+    others.forEach(function (o) {
+      var m = el("div", "mini"); m.tabIndex = 0; m.setAttribute("role", "button");
+      m.appendChild(thumb(o));
+      var t = el("div"); t.appendChild(el("h3", null, o.title)); t.appendChild(metaRow(o)); m.appendChild(t);
+      var go = function () { openPlayer(o.id); };
+      m.addEventListener("click", go); m.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+      side.appendChild(m);
+    });
+    pl.appendChild(side); ov.appendChild(pl); refreshSocial(); cl.focus();
+  }
+  function closePlayer() {
+    var ov = $("#overlay"); if (!ov || ov.hidden) return;
+    var v = ov.querySelector("video"); if (v) v.pause();
+    ov.hidden = true; ov.textContent = ""; S.openId = null; document.body.classList.remove("lock");
+    if (lastFocus && lastFocus.focus && document.contains(lastFocus)) try { lastFocus.focus(); } catch (e) {}
+  }
+
+  /* ---------- watch ---------- */
+  function chips(opts, key) {
+    var w = el("div", "chips");
+    opts.forEach(function (o) {
+      var b = btn("chip", o[1], function () { S[key] = o[0]; w.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); }); fillWatch(); });
+      b.setAttribute("aria-pressed", S[key] === o[0] ? "true" : "false"); w.appendChild(b);
+    });
+    return w;
+  }
+  function pWatch(m) {
+    var tb = el("div", "tb"), sw = el("label", "search");
+    sw.appendChild(ic("search"));
+    var si = document.createElement("input"); si.type = "search"; si.id = "q"; si.placeholder = "جستجو در عنوان، توضیحات و نام کاربر…"; si.value = S.q; si.setAttribute("aria-label", "جستجو");
+    si.addEventListener("input", function () { S.q = si.value; fillWatch(); });
+    sw.appendChild(si); tb.appendChild(sw);
+    tb.appendChild(chips([["new", "جدیدترین"], ["likes", "پرلایک"], ["views", "پربازدید"]], "sort"));
+    tb.appendChild(chips([["all", "همه"], ["video", "ویدیو"], ["short", "شورت"]], "kind"));
+    m.appendChild(tb);
+    var hero = el("div"); hero.id = "hero"; m.appendChild(hero);
+    var head = el("div", "row"); head.appendChild(el("h2", null, "ویدیوها")); var cnt = el("span", "count"); cnt.id = "vcount"; head.appendChild(cnt); m.appendChild(head);
+    var g = el("div"); g.id = "vgrid"; m.appendChild(g);
+    fillWatch();
+  }
+  function fillWatch() {
+    var g = $("#vgrid"), hero = $("#hero"); if (!g) return;
+    g.textContent = ""; hero.textContent = "";
+    if (!S.loaded) { g.appendChild(skeleton(6)); return; }
+    var list = S.videos.slice();
+    if (S.kind !== "all") list = list.filter(function (v) { return v.kind === S.kind; });
+    var q = S.q.trim().toLowerCase();
+    if (q) list = list.filter(function (v) { return (v.title + " " + v.desc + " " + nameOf(v.ownerId)).toLowerCase().indexOf(q) >= 0; });
+    if (S.sort === "likes") list.sort(function (a, b) { return nLikes(b.id) - nLikes(a.id); });
+    if (S.sort === "views") list.sort(function (a, b) { return nViews(b.id) - nViews(a.id); });
+    $("#vcount").textContent = fa.format(list.length) + " مورد";
+    if (!S.dbOn) g.appendChild(el("div", "note", "لیست مشترک در این نمایش فعال نیست، برای همین ویدیوهای ذخیره‌شده دیده نمی‌شن."));
+    if (!list.length) {
+      g.appendChild(S.videos.length ? emptyBox("چیزی پیدا نشد", "عبارت دیگه‌ای رو جستجو کن یا فیلترها رو عوض کن.")
+        : emptyBox("هنوز ویدیویی نیست", "اولین ویدیو رو آپلود کن تا اینجا نمایش داده بشه.", ["آپلود ویدیو", "#upload"]));
+      return;
+    }
+    var rest = list;
+    if (!q && S.sort === "new" && S.kind === "all" && list.length > 1) {
+      var f = list[0]; rest = list.slice(1);
+      var h = el("div", "hero"); h.tabIndex = 0; h.setAttribute("role", "button"); h.setAttribute("aria-label", f.title);
+      h.addEventListener("click", function () { openPlayer(f.id); });
+      h.addEventListener("keydown", function (e) { if (e.target === h && e.key === "Enter") openPlayer(f.id); });
+      h.appendChild(thumb(f));
+      var cv = el("div", "cover"); cv.appendChild(el("h2", null, f.title)); if (f.desc) cv.appendChild(el("p", null, f.desc));
+      cv.appendChild(metaRow(f));
+      var bb = el("span", "btn"); bb.appendChild(ic("play")); bb.appendChild(document.createTextNode("پخش")); cv.appendChild(bb);
+      h.appendChild(cv); hero.appendChild(h);
+    }
+    var grid = el("div", "grid"); rest.forEach(function (v) { grid.appendChild(card(v)); }); g.appendChild(grid);
+    refreshSocial();
+  }
+
+  /* ---------- shorts ---------- */
+  var io = null;
+  function setMuted(m) {
+    S.muted = m;
+    document.querySelectorAll(".feed video").forEach(function (v) { v.muted = m; });
+    document.querySelectorAll(".snd").forEach(function (b) { b.textContent = ""; b.appendChild(ic(m ? "mute" : "vol")); });
+  }
+  function burst(s, e) {
+    var r = s.getBoundingClientRect(), b = el("div", "burst");
+    b.style.left = (e.clientX - r.left) + "px"; b.style.top = (e.clientY - r.top) + "px";
+    b.innerHTML = '<svg viewBox="0 0 24 24">' + ICON.heart + "</svg>"; s.appendChild(b);
+    setTimeout(function () { b.remove(); }, 800);
+  }
+  function pShorts(m) {
+    var list = S.videos.filter(function (v) { return v.kind === "short"; });
+    if (!S.loaded) { m.appendChild(skeleton(3)); return; }
+    if (!list.length) { m.appendChild(emptyBox("هنوز شورتی نیست", "ویدیوی عمودی و کوتاه آپلود کن تا اینجا مثل ریلز پخش بشه.", ["آپلود شورت", "#upload"])); return; }
+    var feed = el("div", "feed"); feed.id = "feed"; feed.tabIndex = 0; feed.setAttribute("aria-label", "فید شورت");
+    feed.dataset.key = list.map(function (v) { return v.id; }).join(",");
+    io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var vid = e.target.querySelector("video");
+        if (e.isIntersecting && e.intersectionRatio > 0.7) { e.target.dataset.active = "1"; var p = vid.play(); if (p && p.catch) p.catch(function () {}); recordView(S.byId[e.target.dataset.id]); }
+        else { e.target.dataset.active = ""; vid.pause(); e.target.classList.remove("ps"); }
+      });
+    }, { root: feed, threshold: [0, 0.7] });
+    list.forEach(function (v, idx) {
+      var s = el("div", "short"); s.dataset.id = v.id;
+      var vid = document.createElement("video");
+      vid.src = v.url; vid.loop = true; vid.muted = S.muted; vid.playsInline = true; vid.preload = "metadata";
+      if (v.thumbId) vid.poster = "/_blob/" + v.thumbId;
+      s.appendChild(vid);
+      var ind = el("div", "ind"), isp = el("span"); isp.appendChild(ic("pause")); ind.appendChild(isp); s.appendChild(ind);
+      var pb = el("div", "pbar"), pi = el("i"); pb.appendChild(pi); s.appendChild(pb);
+      vid.addEventListener("timeupdate", function () { if (vid.duration) pi.style.width = (vid.currentTime / vid.duration * 100) + "%"; });
+      var lastTap = 0, tapT = null;
+      s.addEventListener("click", function (e) {
+        if (e.target.closest("button,a,.sheet,input")) return;
+        var now = Date.now();
+        if (now - lastTap < 300) { clearTimeout(tapT); lastTap = 0; burst(s, e); if (!isLiked(v.id)) toggleLike(v); }
+        else { lastTap = now; tapT = setTimeout(function () { if (vid.paused) { vid.play().catch(function () {}); s.classList.remove("ps"); } else { vid.pause(); s.classList.add("ps"); } }, 300); }
+      });
+      var snd = btn("snd", null, function (e) { e.stopPropagation(); setMuted(!S.muted); }); snd.setAttribute("aria-label", "صدا"); s.appendChild(snd);
+      s.appendChild(el("span", "pos mono", fa.format(idx + 1) + "/" + fa.format(list.length)));
+      var cap = el("div", "cap"); cap.appendChild(el("h3", null, v.title));
+      if (v.desc) cap.appendChild(el("p", "desc", v.desc));
+      if (v.ownerId) cap.appendChild(whoLink(v.ownerId));
+      s.appendChild(cap);
+      var sheet = el("div", "sheet"); sheet.hidden = true;
+      var top = el("div", "top2"); top.appendChild(el("h2", null, "کامنت‌ها")); top.appendChild(btn("ghost", "بستن", function () { sheet.hidden = true; }));
+      sheet.appendChild(top); sheet.appendChild(commentsBox(v));
+      var rail = el("div", "rail"); rail.appendChild(likeBtn(v));
+      rail.appendChild(cmtBtn(v, function () { sheet.hidden = !sheet.hidden; })); rail.appendChild(shareBtn(v));
+      s.appendChild(rail); s.appendChild(sheet);
+      feed.appendChild(s); io.observe(s);
+    });
+    m.appendChild(feed); m.appendChild(el("div", "keys", "↑ ↓ جابه‌جایی · دابل‌کلیک لایک · M صدا · فاصله پخش و توقف"));
+    setMuted(S.muted); refreshSocial();
+  }
+
+  /* ---------- upload ---------- */
+  function probe(file) {
+    return new Promise(function (res) {
+      var v = document.createElement("video"), u = URL.createObjectURL(file), done = false;
+      function fin(r) { if (done) return; done = true; try { URL.revokeObjectURL(u); } catch (e) {} res(r); }
+      v.muted = true; v.playsInline = true; v.preload = "auto";
+      v.onloadedmetadata = function () {
+        var info = { w: v.videoWidth, h: v.videoHeight, d: isFinite(v.duration) ? v.duration : 0, thumb: null };
+        v.onseeked = function () {
+          try {
+            var k = Math.min(1, 640 / Math.max(info.w, info.h)), cv = document.createElement("canvas");
+            cv.width = Math.max(1, Math.round(info.w * k)); cv.height = Math.max(1, Math.round(info.h * k));
+            cv.getContext("2d").drawImage(v, 0, 0, cv.width, cv.height);
+            cv.toBlob(function (b) { info.thumb = b; fin(info); }, "image/jpeg", 0.8);
+          } catch (e) { fin(info); }
+        };
+        v.currentTime = info.d ? Math.min(1, info.d * 0.1) : 0.1;
+        setTimeout(function () { fin(info); }, 7000);
+      };
+      v.onerror = function () { fin(null); };
+      setTimeout(function () { fin(null); }, 12000);
+      v.src = u;
+    });
+  }
+  function autoKind(q) { var i = q.info; return i && i.h > i.w && i.d <= 180 ? "short" : "video"; }
+  async function sniff(f) {
+    try {
+      var b = new Uint8Array(await f.slice(0, 16).arrayBuffer());
+      if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) return "video/mp4";
+      if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return "video/webm";
+    } catch (e) {}
+    return "";
+  }
+  function typeOf(f) { return /^video\/(mp4|webm)$/.test(f.type) ? f.type : (/\.webm$/i.test(f.name) ? "video/webm" : "video/mp4"); }
+
+  async function doUpload(q) {
+    if (q.state !== "draft") return;
+    q.state = "up"; renderQueue();
+    try {
+      if (!S.me.id || !S.col) throw { code: "auth" };
+      if ((S.vraw[S.me.id] || []).length >= MAXV) throw { code: "limit" };
+      var mime = await sniff(q.file); if (!mime) throw { code: "badfile" };
+      var up = await S.assets.upload(q.file, { type: mime });
+      var thumbId = "";
+      if (q.info && q.info.thumb) { try { thumbId = (await S.assets.upload(q.info.thumb, { type: "image/jpeg" })).id; } catch (e) {} }
+      var rec = { id: rid(), assetId: up.id, thumbId: thumbId, title: sane(q.title, 120) || "بدون نام", description: sane(q.desc, 800, true), size: up.sizeBytes, dur: q.info ? Math.round(q.info.d) : 0, kind: q.kind || autoKind(q), createdAt: new Date().toISOString() };
+      await saveMine([rec].concat(S.vraw[S.me.id] || []));
+      q.state = "ok"; q.docId = S.me.id + "." + rec.id; q.msg = (q.kind || autoKind(q)) === "short" ? "به شورت‌ها اضافه شد" : "آپلود شد";
+    } catch (e) {
+      q.state = "err"; var c = e && e.code;
+      q.msg = c === "limit" ? "به سقف ۸۰ ویدیو برای هر کاربر رسیدی. یکی رو حذف کن" : c === "auth" ? "برای آپلود باید با حسابت وارد باشی" : c === "badfile" ? "این فایل ویدیوی MP4 یا WEBM واقعی نیست" : c === "too_large" ? "حجم فایل از سقف پلتفرم (۲۰ مگابایت) بیشتره" : c === "unsupported_type" ? "این فرمت پشتیبانی نمی‌شه. MP4 یا WEBM بذار" : c === "quota_or_state" ? "فضای ذخیره‌سازی پر شده" : c === "rate_limited" ? "درخواست‌ها زیاده. کمی بعد دوباره امتحان کن" : "آپلود انجام نشد";
+    }
+    renderQueue();
+    if (S.assets) S.assets.list().then(function (r) { S.usage = r.usage; var u = $("#usage"); if (u) u.textContent = "فضای استفاده‌شده: " + fmtSize(r.usage.bytes) + " از " + fmtSize(r.usage.maxBytes); }).catch(function () {});
+  }
+  function renderQueue() {
+    var box = $("#queue"); if (!box) return; box.textContent = "";
+    var drafts = S.queue.filter(function (q) { return q.state === "draft"; });
+    if (drafts.length) {
+      var go = el("button", "btn", null); go.type = "button"; go.appendChild(ic("up")); go.appendChild(document.createTextNode("آپلود " + fa.format(drafts.length) + " ویدیو"));
+      go.addEventListener("click", async function () { for (var i = 0; i < drafts.length; i++) await doUpload(drafts[i]); });
+      box.appendChild(go);
+    }
+    S.queue.forEach(function (q, idx) {
+      var r = el("div", "q"), pv = el("div", "pv"); q.pvEl = pv;
+      if (q.thumbUrl) { var im = document.createElement("img"); im.src = q.thumbUrl; im.alt = ""; pv.appendChild(im); } else pv.textContent = q.probing ? "…" : "بدون پیش‌نمایش";
+      r.appendChild(pv);
+      var fl = el("div", "fields");
+      if (q.state === "draft") {
+        var ti = document.createElement("input"); ti.type = "text"; ti.value = q.title; ti.maxLength = 120; ti.id = "dt" + idx; ti.setAttribute("aria-label", "عنوان");
+        ti.addEventListener("input", function () { q.title = ti.value.trim() || "بدون نام"; });
+        var de = document.createElement("textarea"); de.value = q.desc; de.maxLength = 800; de.placeholder = "توضیحات ویدیو (اختیاری)"; de.id = "dd" + idx; de.setAttribute("aria-label", "توضیحات");
+        de.addEventListener("input", function () { q.desc = de.value; });
+        var two = el("div", "two"), sel = document.createElement("select"); sel.id = "dk" + idx; sel.setAttribute("aria-label", "نوع");
+        [["", "نوع: خودکار"], ["video", "ویدیو"], ["short", "شورت"]].forEach(function (o) { var op = el("option", null, o[1]); op.value = o[0]; if (q.kind === o[0]) op.selected = true; sel.appendChild(op); });
+        sel.addEventListener("change", function () { q.kind = sel.value; });
+        two.appendChild(sel); two.appendChild(el("span", "s mono", fmtSize(q.file.size) + (q.info ? " · " + fmtDur(q.info.d) : "")));
+        two.appendChild(btn("ghost del", "حذف", function () { S.queue.splice(S.queue.indexOf(q), 1); renderQueue(); }));
+        fl.appendChild(ti); fl.appendChild(de); fl.appendChild(two);
+      } else {
+        fl.appendChild(el("div", "t", q.title));
+        fl.appendChild(el("div", "s " + (q.state === "err" ? "err" : q.state === "ok" ? "ok" : ""), q.state === "up" ? "در حال آپلود…" : q.msg || ""));
+        if (q.state === "up") fl.appendChild(el("div", "prog"));
+        if (q.state === "ok") { var a = el("div", "actions"); a.appendChild(btn("ghost", "مشاهده", function () { if (S.byId[q.docId]) openPlayer(q.docId); else toast("چند لحظه دیگه دوباره امتحان کن."); })); fl.appendChild(a); }
+        if (q.state === "err") { var a2 = el("div", "actions"); a2.appendChild(btn("ghost", "حذف از لیست", function () { S.queue.splice(S.queue.indexOf(q), 1); renderQueue(); })); fl.appendChild(a2); }
+      }
+      r.appendChild(fl); box.appendChild(r);
+    });
+  }
+  function addFiles(files) {
+    if (!S.assets) { toast("آپلود برای این حساب فعال نیست."); return; }
+    Array.prototype.slice.call(files, 0, 10).forEach(function (f) {
+      var okType = /^video\/(mp4|webm)$/.test(f.type) || /\.(mp4|webm)$/i.test(f.name);
+      var q = { file: f, title: f.name.replace(/\.[^.]+$/, "") || "بدون نام", desc: "", kind: "", state: "draft", info: null, thumbUrl: "", probing: true };
+      if (!okType) { q.state = "err"; q.msg = "فرمت پشتیبانی نمی‌شه. فقط MP4 و WEBM."; q.probing = false; }
+      else if (f.size > MAX) { q.state = "err"; q.msg = "بزرگ‌تر از ۲۰ مگابایته و پلتفرم اجازه‌ی آپلودش رو نمی‌ده."; q.probing = false; }
+      if (S.queue.filter(function (x) { return x.state === "draft"; }).length >= 20) { toast("حداکثر ۲۰ فایل همزمان."); return; }
+      S.queue.unshift(q);
+      if (q.state === "draft") sniff(f).then(function (t) { if (!t && q.state === "draft") { q.state = "err"; q.msg = "این فایل ویدیوی MP4 یا WEBM واقعی نیست."; renderQueue(); } });
+      if (q.state === "draft") probe(f).then(function (info) {
+        q.info = info; q.probing = false;
+        if (info && info.thumb) { q.thumbUrl = URL.createObjectURL(info.thumb); if (q.pvEl) { q.pvEl.textContent = ""; var im = document.createElement("img"); im.src = q.thumbUrl; im.alt = ""; q.pvEl.appendChild(im); } }
+        else if (q.pvEl) q.pvEl.textContent = "بدون پیش‌نمایش";
+        if (info && !q.kind && q.state === "draft") renderQueueMeta();
+      });
+    });
+    renderQueue();
+  }
+  function renderQueueMeta() { /* sizes/durations show on next render; avoid rebuilding inputs while the user types */ }
+  function pUpload(m) {
+    var h = el("div"); var h1 = el("h1"); h1.innerHTML = "آپلود <span>ویدیو</span>"; h.appendChild(h1);
+    h.appendChild(el("p", "sub", "عنوان و توضیحات بنویس. ویدیوی عمودی و کوتاه خودکار تو شورت‌ها می‌ره و از هر ویدیو یه تصویر بندانگشتی ساخته می‌شه.")); m.appendChild(h);
+    if (!S.assets) m.appendChild(el("div", "note", S.loaded ? "آپلود فقط برای صاحب و ویرایشگرهای سایت فعاله. اگه صاحب سایتی با حسابت وارد شو و صفحه رو دوباره باز کن." : "در حال اتصال به ذخیره‌سازی…"));
+    var d = el("label", "drop"), inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "video/mp4,video/webm,.mp4,.webm"; inp.multiple = true; inp.id = "file"; d.appendChild(inp);
+    var u = el("div", "up-icon"); u.appendChild(ic("up")); d.appendChild(u);
+    d.appendChild(el("h2", null, "ویدیوها رو اینجا رها کن")); d.appendChild(el("p", null, "یا برای انتخاب فایل بزن روی دکمه"));
+    d.appendChild(el("span", "btn", "انتخاب ویدیو")); d.appendChild(el("span", "count", "MP4 · WEBM · MAX 20 MB"));
+    inp.addEventListener("change", function () { addFiles(inp.files); inp.value = ""; });
+    ["dragenter", "dragover"].forEach(function (n) { d.addEventListener(n, function (e) { e.preventDefault(); d.classList.add("over"); }); });
+    ["dragleave", "drop"].forEach(function (n) { d.addEventListener(n, function (e) { e.preventDefault(); d.classList.remove("over"); }); });
+    d.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+    m.appendChild(d);
+    var qb = el("div", "queue"); qb.id = "queue"; m.appendChild(qb); renderQueue();
+    var us = el("p", "count", S.usage ? "فضای استفاده‌شده: " + fmtSize(S.usage.bytes) + " از " + fmtSize(S.usage.maxBytes) : ""); us.id = "usage"; m.appendChild(us);
+  }
+
+  /* ---------- profile + account ---------- */
+  function statTile(label, val) { var d = el("div"); d.appendChild(el("b", null, fa.format(val))); d.appendChild(document.createTextNode(label)); return d; }
+  function pProfile(m) {
+    var id = S.viewing || S.me.id; S.viewing = null;
+    var mine = !!id && id === S.me.id;
+    if (!id) { m.appendChild(emptyBox("وارد نشدی", "برای داشتن پروفایل باید با حساب Claude وارد بشی.")); return; }
+    if (!RX_UID.test(id)) { m.appendChild(emptyBox("پروفایل پیدا نشد", "")); return; }
+    var p = S.profiles[id] || {}, list = S.videos.filter(function (v) { return v.ownerId === id; });
+    var box = el("div", "panel"), me = el("div", "me"), src = avatarOf(id);
+    if (src) { var im = document.createElement("img"); im.src = src; im.alt = ""; me.appendChild(im); }
+    var t = el("div"); t.appendChild(el("div", "n", nameOf(id))); if (p.bio) t.appendChild(el("div", "sub", p.bio)); me.appendChild(t); box.appendChild(me);
+    var st = el("div", "stats");
+    st.appendChild(statTile("ویدیو", list.length));
+    st.appendChild(statTile("لایک", list.reduce(function (a, v) { return a + nLikes(v.id); }, 0)));
+    st.appendChild(statTile("بازدید", list.reduce(function (a, v) { return a + nViews(v.id); }, 0)));
+    box.appendChild(st);
+    if (mine) {
+      var l1 = el("label", "f", "نام نمایشی"), i1 = document.createElement("input"); i1.type = "text"; i1.id = "pname"; i1.maxLength = 40; i1.value = p.name || ""; i1.placeholder = S.me.name || "اسمت"; l1.appendChild(i1);
+      var l2 = el("label", "f", "درباره‌ی من"), i2 = document.createElement("textarea"); i2.id = "pbio"; i2.maxLength = 200; i2.value = p.bio || ""; l2.appendChild(i2);
+      var sv = btn("btn", "ذخیره"), msg = el("span", "count");
+      sv.addEventListener("click", async function () {
+        if (!S.pcol) { msg.textContent = "ذخیره‌سازی در دسترس نیست."; return; }
+        sv.disabled = true;
+        try { await S.pcol.doc(id).set({ name: sane(i1.value, 40), bio: sane(i2.value, 200, true) }); msg.textContent = "ذخیره شد."; }
+        catch (e) { msg.textContent = "ذخیره نشد. دوباره امتحان کن."; }
+        sv.disabled = false;
+      });
+      var r = el("div", "actions"); r.appendChild(sv); r.appendChild(msg); box.appendChild(l1); box.appendChild(l2); box.appendChild(r);
+    }
+    m.appendChild(box);
+    var hd = el("div", "row"); hd.appendChild(el("h2", null, mine ? "ویدیوهای من" : "ویدیوهای این کاربر")); hd.appendChild(el("span", "count", fa.format(list.length) + " مورد")); m.appendChild(hd);
+    if (!list.length) { m.appendChild(emptyBox("هنوز ویدیویی نیست", mine ? "از صفحه‌ی آپلود شروع کن." : "این کاربر ویدیویی آپلود نکرده.", mine ? ["آپلود ویدیو", "#upload"] : null)); return; }
+    var g = el("div", "grid");
+    list.forEach(function (v) {
+      if (mine && S.editId === v.id) { var w = el("div", "own"); w.appendChild(editForm(v)); g.appendChild(w); }
+      else g.appendChild(card(v, mine));
+    });
+    m.appendChild(g); refreshSocial();
+  }
+  function pAccount(m) {
+    var h1 = el("h1"); h1.innerHTML = "<span>اکانت</span>"; m.appendChild(h1);
+    var box = el("div", "panel"), me = el("div", "me"), im = document.createElement("img"); im.src = S.me.avatarUrl; im.alt = ""; me.appendChild(im);
+    var t = el("div"); t.appendChild(el("div", "n", S.me.id ? (S.me.name || "بدون نام") : "مهمان")); t.appendChild(el("div", "sub", S.me.id ? "وارد شدی" : "با حساب Claude وارد نشدی")); me.appendChild(t); box.appendChild(me);
+    var dl = el("dl", "kv");
+    function row(k, v, on) { dl.appendChild(el("dt", null, k)); dl.appendChild(el("dd", on ? "on" : null, v)); }
+    var mine = S.videos.filter(function (v) { return S.me.id && v.ownerId === S.me.id; });
+    row("آپلود ویدیو", S.assets ? "فعال" : "غیرفعال", !!S.assets);
+    row("لایک و کامنت", S.me.id && S.canWrite !== false ? "فعال" : "غیرفعال", !!(S.me.id && S.canWrite !== false));
+    row("نقش", S.me.isOwner ? "صاحب سایت" : S.me.canEdit ? "ویرایشگر" : "بیننده", false);
+    row("ویدیوهای من", fa.format(mine.length), false);
+    row("لایک دریافتی", fa.format(mine.reduce(function (a, v) { return a + nLikes(v.id); }, 0)), false);
+    box.appendChild(dl); m.appendChild(box);
+    m.appendChild(el("div", "note", "این سایت ثبت‌نام جدا نداره. با حساب Claude خودت وارد می‌شی و ورود و خروج از منوی claude.ai انجام می‌شه. دسترسی بقیه رو هم از منوی Share تعیین می‌کنی."));
+    var sec = el("div", "panel"); sec.appendChild(el("h2", null, "امنیت"));
+    ["لایک، کامنت، بازدید و پروفایل هر نفر توی سند مخصوص خودش ذخیره می‌شه و فقط خودش می‌تونه ازش بنویسه. کسی نمی‌تونه از طرف بقیه لایک یا کامنت بذاره.",
+     "ویدیوها فقط توسط صاحب و ویرایشگرهای سایت آپلود می‌شن و هر نفر فقط سند ویدیوهای خودش رو عوض می‌کنه.",
+     "هر چیزی که از ذخیره‌سازی خونده می‌شه قبل از نمایش پاک‌سازی و اعتبارسنجی می‌شه.",
+     "فایل آپلودی از نظر محتوای واقعی MP4 یا WEBM بودن بررسی می‌شه، نه فقط از روی پسوند."].forEach(function (t) { sec.appendChild(el("p", "sub", t)); });
+    m.appendChild(sec);
+  }
+
+  /* ---------- shell ---------- */
+  function buildNav() {
+    var n = $("#nav");
+    PAGES.forEach(function (p) { var a = el("a"); a.href = "#" + p[0]; a.dataset.p = p[0]; a.appendChild(ic(p[0])); a.appendChild(el("span", null, p[1])); n.appendChild(a); });
+  }
+  function render() {
+    var p = page();
+    document.querySelectorAll("#nav a").forEach(function (a) { if (a.dataset.p === p) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    if (io) { io.disconnect(); io = null; }
+    var m = $("#main"); m.textContent = "";
+    ({ watch: pWatch, shorts: pShorts, upload: pUpload, profile: pProfile, account: pAccount })[p](m);
+  }
+  function onData() {
+    var p = page();
+    if (p === "watch") fillWatch();
+    else if (p === "shorts") { var f = $("#feed"), key = S.videos.filter(function (v) { return v.kind === "short"; }).map(function (v) { return v.id; }).join(","); if (!f || f.dataset.key !== key) { if (!f || !document.activeElement || !f.contains(document.activeElement) || document.activeElement.tagName !== "INPUT") render(); } }
+    else if (p === "profile" || p === "account") { var ae = document.activeElement; if (!(ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName) && $("#main").contains(ae))) render(); }
+    refreshSocial();
+  }
+  window.addEventListener("hashchange", function () { closePlayer(); render(); window.scrollTo(0, 0); });
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target && e.target.tagName) || "";
+    if (e.key === "Escape") { closePlayer(); return; }
+    if (/INPUT|TEXTAREA|SELECT/.test(tag) || page() !== "shorts" || S.openId) return;
+    var feed = $("#feed"); if (!feed) return;
+    var cur = feed.querySelector('.short[data-active="1"]'), vid = cur && cur.querySelector("video");
+    if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); feed.scrollBy({ top: feed.clientHeight, behavior: "smooth" }); }
+    else if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); feed.scrollBy({ top: -feed.clientHeight, behavior: "smooth" }); }
+    else if (e.key === "m") setMuted(!S.muted);
+    else if (e.key === "l" && cur) toggleLike(S.byId[cur.dataset.id]);
+    else if (e.key === " " && vid && tag !== "BUTTON") { e.preventDefault(); if (vid.paused) { vid.play().catch(function () {}); cur.classList.remove("ps"); } else { vid.pause(); cur.classList.add("ps"); } }
+  });
+
+  buildNav(); render();
+
+  /* ---------- connect storage ---------- */
+  (async function () {
+    try {
+      var c = window.claude; if (!c || !c.use) throw 0;
+      var user = await c.use("user");
+      if (user) { S.me = await user.me(); S.me.name = sane(S.me.name, 60); if (!okAvatar(S.me.avatarUrl)) S.me.avatarUrl = ""; if (S.me.id && !RX_UID.test(S.me.id)) S.me.id = null; S.userCap = user; try { S.canWrite = await user.can("data.write"); } catch (e) {} }
+      S.assets = await c.use("assets");
+      var db = await c.use("db");
+      if (db) {
+        S.dbOn = true; S.col = db.collection("videos"); S.pcol = db.collection("profiles");
+        S.lcol = db.collection("likes"); S.ccol = db.collection("comments"); S.vcol = db.collection("views");
+        S.pcol.onSnapshot(function (snap) {
+          var o = {}; snap.docs.forEach(function (d) { if (!RX_UID.test(d.id)) return; var x = d.data() || {}; o[d.id] = { name: sane(x.name, 40), bio: sane(x.bio, 200, true) }; });
+          S.profiles = o; onData();
+        }, function () {});
+        S.lcol.onSnapshot(function (snap) { S.likeDocs = parseKeyDocs(snap, MAXL); rebuildMap(S.likeDocs, "likes"); refreshSocial(); if (page() === "watch" && S.sort === "likes") fillWatch(); }, function () {});
+        S.vcol.onSnapshot(function (snap) { S.viewDocs = parseKeyDocs(snap, MAXW); rebuildMap(S.viewDocs, "views"); refreshSocial(); if (page() === "watch" && S.sort === "views") fillWatch(); }, function () {});
+        S.ccol.onSnapshot(async function (snap) { parseCmt(snap); refreshSocial(); await resolveNames(); refreshSocial(); }, function () {});
+        S.col.onSnapshot(async function (snap) { parseVideos(snap); S.loaded = true; await resolveNames(); onData(); }, function () { S.loaded = true; onData(); });
+      }
+      if (S.assets) { try { S.usage = (await S.assets.list()).usage; } catch (e) {} }
+      if (!db) S.loaded = true;
+      if (page() === "upload" || page() === "account" || !db) render();
+    } catch (e) { S.loaded = true; render(); }
+  })();
+})();
+</script>
+
+</body></html>
